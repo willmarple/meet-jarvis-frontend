@@ -216,8 +216,8 @@ export interface MeetingData {
 
 export interface User {
   id: string;
-  fullName?: string;
-  firstName?: string;
+  fullName?: string | null;
+  firstName?: string | null;
   emailAddresses?: Array<{ emailAddress: string }>;
 }
 
@@ -289,4 +289,29 @@ export interface KnowledgeStatItem {
   content_type: string;
   source: string;
   embedding: unknown;
+}
+
+// Database table types
+export interface MeetingKnowledge {
+  id: string;
+  meeting_id: string;
+  content: string;
+  content_type: 'fact' | 'context' | 'summary' | 'question' | 'answer';
+  source: string;
+  created_at: string;
+  updated_at: string;
+  embedding?: number[];
+  keywords?: string[];
+  summary?: string;
+  relevance_score?: number;
+}
+
+export interface MeetingParticipant {
+  id: string;
+  meeting_id: string;
+  user_name: string;
+  user_id: string;
+  joined_at: string;
+  left_at?: string;
+  is_connected: boolean;
 }

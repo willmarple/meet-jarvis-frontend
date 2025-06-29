@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { useSearchKnowledge } from './useKnowledge';
-import { type SearchResult } from '../../shared/types';
+import { type SearchResult } from '../types/types';
 import { type SearchFilters } from '../components/KnowledgeSearch';
 
 interface UseKnowledgeSearchProps {

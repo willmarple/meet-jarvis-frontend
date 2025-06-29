@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { AuthWrapper } from './components/AuthWrapper';
 import { HomePage } from './components/HomePage';
 import { MeetingRoom } from './components/MeetingRoom';
-import { AppState, MeetingData } from './types/index.js';
+import { AppState, MeetingData, User } from './types/index';
 
 function App() {
   const { user, isSignedIn } = useUser();
@@ -109,7 +109,7 @@ function App() {
         body: JSON.stringify({ 
           id: roomId,
           name: `${userName}'s Meeting`,
-          host_id: user.id
+          host_id: user?.id || 'anonymous'
         }),
       });
       
@@ -123,7 +123,7 @@ function App() {
       setMeetingData({
         roomId: data.id,
         userName,
-        userId: user.id,
+        userId: user?.id || 'anonymous',
       });
       
       // Update URL
@@ -181,7 +181,7 @@ function App() {
           <HomePage
             onCreateRoom={createRoom}
             onJoinRoom={joinRoom}
-            user={user || null}
+            user={user as User | null}
             isSignedIn={isSignedIn || false}
             authError={authError}
           />
@@ -192,7 +192,7 @@ function App() {
               userName={meetingData.userName}
               userId={meetingData.userId}
               onLeave={leaveMeeting}
-              user={user || null}
+              user={user as User | null}
               isSignedIn={isSignedIn || false}
             />
           )

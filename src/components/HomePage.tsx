@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 import { useClerk } from '@clerk/clerk-react';
-import { Video, Users, Plus, ArrowRight, Calendar, Clock, Shield, LogOut, User, LogIn, UserPlus } from 'lucide-react';
-
-interface User {
-  fullName?: string;
-  firstName?: string;
-  emailAddresses?: Array<{ emailAddress: string }>;
-}
+import { Video, Users, Plus, ArrowRight, Calendar, Clock, Shield, LogOut, User as UserIcon, LogIn, UserPlus } from 'lucide-react';
+import { User } from '../types/index';
 
 interface HomePageProps {
   onJoinRoom: (roomId: string, userName: string) => void;
@@ -78,7 +73,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                    <User className="w-4 h-4 text-white" />
+                    <UserIcon className="w-4 h-4 text-white" />
                   </div>
                   <div>
                     <p className="text-white font-medium">

@@ -7,13 +7,8 @@ import { MeetingControls } from './MeetingControls';
 import { KnowledgePanel } from './KnowledgePanel';
 import { AIToolsPanel } from './AIToolsPanel';
 import { UserMenu } from './UserMenu';
-import { Copy, CheckCircle, Brain, Mic, Sparkles, Wrench, AlertCircle, User, Shield } from 'lucide-react';
-
-interface User {
-  fullName?: string;
-  firstName?: string;
-  emailAddresses?: Array<{ emailAddress: string }>;
-}
+import { Copy, CheckCircle, Brain, Mic, Sparkles, Wrench, AlertCircle, User as UserIcon, Shield } from 'lucide-react';
+import { User } from '../types/index';
 
 interface MeetingRoomProps {
   roomId: string;
@@ -224,7 +219,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
               </span>
             ) : (
               <span className="bg-yellow-600/20 text-yellow-400 px-2 py-1 rounded-full text-xs flex items-center gap-1">
-                <User className="w-3 h-3" />
+                <UserIcon className="w-3 h-3" />
                 Guest Mode
               </span>
             )}
@@ -396,7 +391,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
         {!isSignedIn && (
           <div className="px-6 py-2 bg-yellow-600/20 border-t border-yellow-600/30">
             <p className="text-yellow-400 text-sm flex items-center gap-2">
-              <User className="w-3 h-3" />
+              <UserIcon className="w-3 h-3" />
               Guest Mode: Some features may be limited. Sign in for full access.
             </p>
           </div>

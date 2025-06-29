@@ -3,7 +3,7 @@ import type {
   ApiResponse,
   SearchResult,
   KnowledgeHealthResult,
-} from '../../shared/types'
+} from '../types/types'
 
 /**
  * Perform RAG search on knowledge base

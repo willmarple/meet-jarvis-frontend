@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Search, Filter, Loader2, Brain, Sparkles } from 'lucide-react';
-import { type SearchResult } from '../../shared/types';
+import { type SearchResult } from '../types/types';
 import { type MeetingKnowledge } from '../lib/supabase';
 
 interface KnowledgeSearchProps {

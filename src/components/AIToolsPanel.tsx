@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Wrench, Play, CheckCircle, XCircle, Loader2, ChevronDown, ChevronRight } from 'lucide-react';
-import { type AITool, type ToolCall, type ToolResult, type JsonValue } from '../../shared/types';
+import { type AITool, type ToolCall, type ToolResult, type JsonValue } from '../types/types';
 
 interface ParameterConfig {
   type: string;
   description?: string;
   enum?: JsonValue[];
   default?: JsonValue;
-  [key: string]: JsonValue;
+  [key: string]: JsonValue | undefined;
 }
 
 interface AIToolsPanelProps {
@@ -79,7 +79,7 @@ export const AIToolsPanel: React.FC<AIToolsPanelProps> = ({
     if (paramConfig.enum) {
       return (
         <select
-          value={value}
+          value={String(value || '')}
           onChange={(e) => handleParameterChange(paramName, e.target.value)}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
         >
@@ -109,7 +109,7 @@ export const AIToolsPanel: React.FC<AIToolsPanelProps> = ({
       return (
         <input
           type="number"
-          value={value}
+          value={String(value || '')}
           onChange={(e) => handleParameterChange(paramName, parseFloat(e.target.value))}
           placeholder={paramConfig.description}
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm placeholder-gray-400"
@@ -120,7 +120,7 @@ export const AIToolsPanel: React.FC<AIToolsPanelProps> = ({
     return (
       <input
         type="text"
-        value={value}
+        value={String(value || '')}
         onChange={(e) => handleParameterChange(paramName, e.target.value)}
         placeholder={paramConfig.description}
         className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm placeholder-gray-400"

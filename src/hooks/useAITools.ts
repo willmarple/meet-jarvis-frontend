@@ -14,7 +14,7 @@ import type {
   GetActionItemsParams,
   SummarizeTopicParams,
   FindSimilarDiscussionsParams,
-} from '../../shared/types'
+} from '../types/types'
 
 // Query Keys
 export const aiToolsKeys = {

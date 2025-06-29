@@ -13,7 +13,7 @@ import type {
   TopicSummaryResult,
   SimilarDiscussionsResult,
   ElevenLabsTestResult,
-} from '../../shared/types'
+} from '../types/types'
 
 /**
  * Execute a specific AI tool
@@ -39,13 +39,13 @@ export const searchMeetingKnowledge = async (
   params: SearchParams,
   meetingId?: string
 ): Promise<SearchKnowledgeResult> => {
-  const result = await executeAITool('search_meeting_knowledge', params as Record<string, unknown>, meetingId)
+  const result = await executeAITool('search_meeting_knowledge', params as unknown as Record<string, unknown>, meetingId)
   
   if (!result.success) {
     throw new Error(result.error || 'Search failed')
   }
   
-  return result.data as SearchKnowledgeResult
+  return result.data as unknown as SearchKnowledgeResult
 }
 
 /**
@@ -55,13 +55,13 @@ export const recallDecisions = async (
   params: RecallDecisionsParams,
   meetingId?: string
 ): Promise<RecallDecisionsResult> => {
-  const result = await executeAITool('recall_decisions', params as Record<string, unknown>, meetingId)
+  const result = await executeAITool('recall_decisions', params as unknown as Record<string, unknown>, meetingId)
   
   if (!result.success) {
     throw new Error(result.error || 'Recall decisions failed')
   }
   
-  return result.data as RecallDecisionsResult
+  return result.data as unknown as RecallDecisionsResult
 }
 
 /**
@@ -71,13 +71,13 @@ export const getActionItems = async (
   params: GetActionItemsParams,
   meetingId?: string
 ): Promise<ActionItemsResult> => {
-  const result = await executeAITool('get_action_items', params as Record<string, unknown>, meetingId)
+  const result = await executeAITool('get_action_items', params as unknown as Record<string, unknown>, meetingId)
   
   if (!result.success) {
     throw new Error(result.error || 'Get action items failed')
   }
   
-  return result.data as ActionItemsResult
+  return result.data as unknown as ActionItemsResult
 }
 
 /**
@@ -87,13 +87,13 @@ export const summarizeTopic = async (
   params: SummarizeTopicParams,
   meetingId?: string
 ): Promise<TopicSummaryResult> => {
-  const result = await executeAITool('summarize_topic', params as Record<string, unknown>, meetingId)
+  const result = await executeAITool('summarize_topic', params as unknown as Record<string, unknown>, meetingId)
   
   if (!result.success) {
     throw new Error(result.error || 'Summarize topic failed')
   }
   
-  return result.data as TopicSummaryResult
+  return result.data as unknown as TopicSummaryResult
 }
 
 /**
@@ -103,13 +103,13 @@ export const findSimilarDiscussions = async (
   params: FindSimilarDiscussionsParams,
   meetingId?: string
 ): Promise<SimilarDiscussionsResult> => {
-  const result = await executeAITool('find_similar_discussions', params as Record<string, unknown>, meetingId)
+  const result = await executeAITool('find_similar_discussions', params as unknown as Record<string, unknown>, meetingId)
   
   if (!result.success) {
     throw new Error(result.error || 'Find similar discussions failed')
   }
   
-  return result.data as SimilarDiscussionsResult
+  return result.data as unknown as SimilarDiscussionsResult
 }
 
 /**
