@@ -7,6 +7,7 @@ import {
   useSummarizeTopic, 
   useFindSimilarDiscussions 
 } from './useAITools';
+import type { GetActionItemsParams, FindSimilarDiscussionsParams, ToolCall as ImportedToolCall, JsonValue } from '../types/types';
 
 interface KnowledgeItem {
   id: string;
@@ -14,15 +15,21 @@ interface KnowledgeItem {
   [key: string]: unknown;
 }
 
-interface ToolCall {
-  name: string;
-  parameters: Record<string, unknown>;
-}
+// Use the imported ToolCall type for consistency
+type ToolCall = ImportedToolCall;
 
 interface ToolResult {
   success: boolean;
   data?: unknown;
   error?: string;
+}
+
+interface ElevenLabsMessage {
+  type?: string;
+  source?: string;
+  message?: string;
+  tool_name?: string;
+  parameters?: Record<string, JsonValue>;
 }
 
 interface UseElevenLabsVoiceRAGProps {
@@ -92,11 +99,11 @@ export const useElevenLabsVoiceRAG = ({
 
   // Enhanced message callback with RAG context and tool handling
   const onMessageCallback = useCallback(async (message: unknown) => {
-    const msg = message as any;
+    const msg = message as ElevenLabsMessage;
     console.log('🎤 ElevenLabs RAG - Message received:', {
       type: msg.type,
       source: msg.source,
-      message: msg.message?.substring(0, 100) + (msg.message?.length > 100 ? '...' : ''),
+      message: msg.message?.substring(0, 100) + ((msg.message?.length ?? 0) > 100 ? '...' : ''),
       timestamp: new Date().toISOString()
     });
 
@@ -122,7 +129,7 @@ export const useElevenLabsVoiceRAG = ({
       });
       
       const toolCall: ToolCall = {
-        name: msg.tool_name,
+        name: msg.tool_name || 'unknown',
         parameters: msg.parameters || {}
       };
       setLastToolCall(toolCall);
@@ -147,7 +154,8 @@ export const useElevenLabsVoiceRAG = ({
 
   const onErrorCallback = useCallback((error: unknown) => {
     console.error('🎤 ElevenLabs RAG - Error occurred:', error);
-    setError((error as any)?.message || 'ElevenLabs conversation error');
+    const errorMessage = error instanceof Error ? error.message : 'ElevenLabs conversation error';
+    setError(errorMessage);
     connectionAttemptRef.current = false;
     initializationRef.current = false;
   }, []);
@@ -158,7 +166,7 @@ export const useElevenLabsVoiceRAG = ({
 
   // Create client tools configuration for ElevenLabs
   const clientTools = useMemo(() => {
-    if (!meetingContext) return {};
+    if (!meetingContext) return undefined;
     
     return {
       search_meeting_knowledge: async (parameters: { query: string; content_type?: string; limit?: number }) => {
@@ -168,7 +176,7 @@ export const useElevenLabsVoiceRAG = ({
             params: parameters,
             meetingId: meetingContext.meetingId
           });
-          return result;
+          return JSON.stringify(result);
         } catch (error) {
           console.error('🔧 Tool execution failed - search_meeting_knowledge:', error);
           throw error;
@@ -182,21 +190,21 @@ export const useElevenLabsVoiceRAG = ({
             params: parameters,
             meetingId: meetingContext.meetingId
           });
-          return result;
+          return JSON.stringify(result);
         } catch (error) {
           console.error('🔧 Tool execution failed - recall_decisions:', error);
           throw error;
         }
       },
       
-      get_action_items: async (parameters: { assignee?: string; status?: string }) => {
+      get_action_items: async (parameters: GetActionItemsParams) => {
         try {
           console.log('🔧 Executing get_action_items:', parameters);
           const result = await getActionItemsMutation.mutateAsync({
             params: parameters,
             meetingId: meetingContext.meetingId
           });
-          return result;
+          return JSON.stringify(result);
         } catch (error) {
           console.error('🔧 Tool execution failed - get_action_items:', error);
           throw error;
@@ -210,21 +218,21 @@ export const useElevenLabsVoiceRAG = ({
             params: parameters,
             meetingId: meetingContext.meetingId
           });
-          return result;
+          return JSON.stringify(result);
         } catch (error) {
           console.error('🔧 Tool execution failed - summarize_topic:', error);
           throw error;
         }
       },
       
-      find_similar_discussions: async (parameters: { reference_text: string; scope?: string }) => {
+      find_similar_discussions: async (parameters: FindSimilarDiscussionsParams) => {
         try {
           console.log('🔧 Executing find_similar_discussions:', parameters);
           const result = await findSimilarDiscussionsMutation.mutateAsync({
             params: parameters,
             meetingId: meetingContext.meetingId
           });
-          return result;
+          return JSON.stringify(result);
         } catch (error) {
           console.error('🔧 Tool execution failed - find_similar_discussions:', error);
           throw error;
@@ -276,7 +284,7 @@ export const useElevenLabsVoiceRAG = ({
 
       // Prepare initial context for the AI agent
       if (meetingContext) {
-        const availableTools = Object.keys(clientTools);
+        const availableTools = clientTools ? Object.keys(clientTools) : [];
         console.log(`Meeting Context: ${meetingContext.meetingId} with ${meetingContext.participants.length} participants. ${meetingContext.existingKnowledge.length} knowledge items available. Available tools: ${availableTools.join(', ')}.`);
       }
 
@@ -327,24 +335,26 @@ export const useElevenLabsVoiceRAG = ({
 
   // Manual tool execution for testing
   const executeManualTool = useCallback(async (toolName: string, parameters: unknown) => {
-    if (!meetingContext) {
-      console.error('Meeting context not available for tool execution');
-      return null;
+    if (!meetingContext || !clientTools) {
+      console.error('Meeting context or client tools not available for tool execution');
+      return { success: false, error: 'Meeting context or client tools not available' };
     }
 
-    const tool = clientTools[toolName];
+    const tool = clientTools[toolName as keyof typeof clientTools];
     if (!tool) {
       console.error(`Tool ${toolName} not found in clientTools`);
-      return null;
+      return { success: false, error: `Tool ${toolName} not found` };
     }
 
     try {
-      const result = await tool(parameters);
-      setLastToolCall({ name: toolName, parameters });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await tool(parameters as any);
+      setLastToolCall({ name: toolName, parameters: parameters as Record<string, JsonValue> });
       return { success: true, data: result };
     } catch (error) {
       console.error('Manual tool execution error:', error);
-      return { success: false, error: error.message };
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return { success: false, error: errorMessage };
     }
   }, [meetingContext, clientTools]);
 
@@ -383,7 +393,7 @@ export const useElevenLabsVoiceRAG = ({
     // RAG-specific features
     lastToolCall,
     executeManualTool,
-    availableTools: meetingContext ? Object.keys(clientTools) : [],
+    availableTools: meetingContext && clientTools ? Object.keys(clientTools) : [],
     // Expose additional conversation properties for debugging
     conversationStatus: conversation.status,
     isSpeaking: conversation.isSpeaking

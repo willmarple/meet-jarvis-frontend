@@ -194,6 +194,7 @@ export const knowledgeService = {
     return supabase
       .channel(`meeting_knowledge:${meetingId}`)
       .on(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         'postgres_changes' as any,
         {
           event: '*',
@@ -214,6 +215,7 @@ export const realtimeService = {
     return supabase
       .channel(`meeting_participants:${meetingId}`)
       .on(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         'postgres_changes' as any,
         {
           event: '*',
@@ -231,7 +233,8 @@ export const realtimeService = {
     return supabase
       .channel(`meeting:${meetingId}`)
       .on(
-        'postgres_changes',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        'postgres_changes' as any,
         {
           event: '*',
           schema: 'public',

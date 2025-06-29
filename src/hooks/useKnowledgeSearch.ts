@@ -46,7 +46,7 @@ export const useKnowledgeSearch = ({ meetingId }: UseKnowledgeSearchProps) => {
       setResults(filteredResults);
       return filteredResults;
     } catch (error: unknown) {
-      if ((error as any)?.name !== 'AbortError') {
+      if (error instanceof Error && error.name !== 'AbortError') {
         console.error('Search error:', error);
         setResults([]);
       }

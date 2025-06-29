@@ -76,14 +76,15 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
       console.log('🎤 Meeting Room - AI Tool Call executed:', toolCall.name, result);
       // Add tool results to knowledge base if successful
       if (result.success && result.data) {
-        const summary = `AI Tool "${toolCall.name}" executed with parameters: ${JSON.stringify(toolCall.parameters)}. Found ${(result.data as any)?.results?.length || 0} results.`;
+        const resultData = result.data as { results?: unknown[] };
+        const summary = `AI Tool "${toolCall.name}" executed with parameters: ${JSON.stringify(toolCall.parameters)}. Found ${resultData?.results?.length || 0} results.`;
         addKnowledge(summary, 'context', 'ai');
       }
     },
     meetingContext: {
       meetingId: roomId,
       participants: participants.map(p => p.name),
-      existingKnowledge: knowledge as any
+      existingKnowledge: knowledge.map(k => ({ id: k.id, content: k.content }))
     }
   });
 
@@ -147,7 +148,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
       // Add test results to knowledge
       if (searchResult?.success) {
         addKnowledge(
-          `AI Tools Test: Successfully searched for "performance issues" and found ${searchResult.data?.results?.length || 0} results.`,
+          `AI Tools Test: Successfully searched for "performance issues" and found ${(searchResult.data as { results?: unknown[] })?.results?.length || 0} results.`,
           'context',
           'ai'
         );
@@ -474,8 +475,8 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
           description: `AI tool: ${name}`, 
           parameters: { type: 'object', properties: {}, required: [] } 
         }))}
-        onExecuteTool={executeManualTool as any}
-        lastToolCall={lastToolCall as any}
+        onExecuteTool={executeManualTool}
+        lastToolCall={lastToolCall}
         isVisible={showAIToolsPanel}
         onClose={() => setShowAIToolsPanel(false)}
       />

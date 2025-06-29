@@ -7,6 +7,14 @@ interface KnowledgeItem {
   [key: string]: unknown;
 }
 
+interface ElevenLabsMessage {
+  type?: string;
+  source?: string;
+  message?: string;
+  tool_name?: string;
+  parameters?: Record<string, unknown>;
+}
+
 interface UseElevenLabsVoiceProps {
   onResponse?: (response: string) => void;
   onTranscription?: (text: string) => void;
@@ -63,11 +71,11 @@ export const useElevenLabsVoice = ({
 
   // Enhanced message callback with RAG context
   const onMessageCallback = useCallback(async (message: unknown) => {
-    const msg = message as any;
+    const msg = message as ElevenLabsMessage;
     console.log('🎤 ElevenLabs - Message received:', {
       type: msg.type,
       source: msg.source,
-      message: msg.message?.substring(0, 100) + (msg.message?.length > 100 ? '...' : ''),
+      message: msg.message?.substring(0, 100) + ((msg.message?.length ?? 0) > 100 ? '...' : ''),
       timestamp: new Date().toISOString()
     });
 
@@ -101,7 +109,8 @@ export const useElevenLabsVoice = ({
 
   const onErrorCallback = useCallback((error: unknown) => {
     console.error('🎤 ElevenLabs - Error occurred:', error);
-    setError((error as any)?.message || 'ElevenLabs conversation error');
+    const errorMessage = error instanceof Error ? error.message : 'ElevenLabs conversation error';
+    setError(errorMessage);
     connectionAttemptRef.current = false;
     initializationRef.current = false;
   }, []);
