@@ -63,26 +63,27 @@ export const useElevenLabsVoice = ({
 
   // Enhanced message callback with RAG context
   const onMessageCallback = useCallback(async (message: unknown) => {
+    const msg = message as any;
     console.log('🎤 ElevenLabs - Message received:', {
-      type: message.type,
-      source: message.source,
-      message: message.message?.substring(0, 100) + (message.message?.length > 100 ? '...' : ''),
+      type: msg.type,
+      source: msg.source,
+      message: msg.message?.substring(0, 100) + (msg.message?.length > 100 ? '...' : ''),
       timestamp: new Date().toISOString()
     });
 
     // Handle user transcriptions
-    if (message.source === 'user' && message.message && onTranscription) {
+    if (msg.source === 'user' && msg.message && onTranscription) {
       console.log('🎤 ElevenLabs - Processing user transcription');
-      onTranscription(message.message);
+      onTranscription(msg.message);
 
       // Note: AI context building now happens through the ElevenLabsRAG hook
       // with clientTools integration for knowledge access
       console.log('🎤 ElevenLabs - User input received, context handled by RAG system');
     } 
     // Handle AI responses
-    else if (message.source === 'ai' && message.message && onResponse) {
+    else if (msg.source === 'ai' && msg.message && onResponse) {
       console.log('🎤 ElevenLabs - Processing AI response');
-      onResponse(message.message);
+      onResponse(msg.message);
     }
   }, [onTranscription, onResponse]);
 
@@ -100,7 +101,7 @@ export const useElevenLabsVoice = ({
 
   const onErrorCallback = useCallback((error: unknown) => {
     console.error('🎤 ElevenLabs - Error occurred:', error);
-    setError(error.message || 'ElevenLabs conversation error');
+    setError((error as any)?.message || 'ElevenLabs conversation error');
     connectionAttemptRef.current = false;
     initializationRef.current = false;
   }, []);

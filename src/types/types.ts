@@ -64,6 +64,8 @@ export interface KnowledgeItem {
 export interface SearchResult extends KnowledgeItem {
   similarity: number
   keyword_match?: boolean
+  keywords?: string[]
+  summary?: string
 }
 
 // ===========================
@@ -74,6 +76,13 @@ export interface SearchParams {
   query: string
   content_type?: string
   limit?: number
+}
+
+export interface SearchFilters {
+  contentType?: MeetingKnowledge['content_type'];
+  source?: string;
+  threshold?: number;
+  meetingScope?: 'current' | 'all';
 }
 
 export interface RecallDecisionsParams {
@@ -297,7 +306,7 @@ export interface MeetingKnowledge {
   meeting_id: string;
   content: string;
   content_type: 'fact' | 'context' | 'summary' | 'question' | 'answer';
-  source: string;
+  source: 'user' | 'ai' | 'document';
   created_at: string;
   updated_at: string;
   embedding?: number[];

@@ -92,37 +92,38 @@ export const useElevenLabsVoiceRAG = ({
 
   // Enhanced message callback with RAG context and tool handling
   const onMessageCallback = useCallback(async (message: unknown) => {
+    const msg = message as any;
     console.log('🎤 ElevenLabs RAG - Message received:', {
-      type: message.type,
-      source: message.source,
-      message: message.message?.substring(0, 100) + (message.message?.length > 100 ? '...' : ''),
+      type: msg.type,
+      source: msg.source,
+      message: msg.message?.substring(0, 100) + (msg.message?.length > 100 ? '...' : ''),
       timestamp: new Date().toISOString()
     });
 
     // Handle user transcriptions
-    if (message.source === 'user' && message.message && onTranscription) {
+    if (msg.source === 'user' && msg.message && onTranscription) {
       console.log('🎤 ElevenLabs RAG - Processing user transcription');
-      onTranscription(message.message);
+      onTranscription(msg.message);
 
       // Note: Context building now happens through the clientTools system
       // when the ElevenLabs AI agent calls our knowledge search tools
       console.log('🎤 ElevenLabs RAG - User input logged, tools available for AI agent');
     } 
     // Handle AI responses
-    else if (message.source === 'ai' && message.message && onResponse) {
+    else if (msg.source === 'ai' && msg.message && onResponse) {
       console.log('🎤 ElevenLabs RAG - Processing AI response');
-      onResponse(message.message);
+      onResponse(msg.message);
     }
     // Handle tool calls (now handled automatically by clientTools configuration)
-    else if (message.type === 'tool_call') {
+    else if (msg.type === 'tool_call') {
       console.log('🎤 ElevenLabs RAG - Tool call detected (handled by clientTools):', {
-        toolName: message.tool_name,
-        parameters: message.parameters
+        toolName: msg.tool_name,
+        parameters: msg.parameters
       });
       
       const toolCall: ToolCall = {
-        name: message.tool_name,
-        parameters: message.parameters || {}
+        name: msg.tool_name,
+        parameters: msg.parameters || {}
       };
       setLastToolCall(toolCall);
       
@@ -146,7 +147,7 @@ export const useElevenLabsVoiceRAG = ({
 
   const onErrorCallback = useCallback((error: unknown) => {
     console.error('🎤 ElevenLabs RAG - Error occurred:', error);
-    setError(error.message || 'ElevenLabs conversation error');
+    setError((error as any)?.message || 'ElevenLabs conversation error');
     connectionAttemptRef.current = false;
     initializationRef.current = false;
   }, []);

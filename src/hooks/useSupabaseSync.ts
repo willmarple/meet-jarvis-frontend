@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { meetingService, knowledgeService, realtimeService, type MeetingKnowledge, type MeetingParticipant } from '../lib/supabase';
+import { meetingService, knowledgeService, realtimeService } from '../lib/supabase';
+import { type MeetingKnowledge, type MeetingParticipant } from '../types/types';
 
 interface UseSupabaseSyncProps {
   meetingId: string;
@@ -100,17 +101,17 @@ export const useSupabaseSync = ({ meetingId, userId, userName }: UseSupabaseSync
       (payload) => {
         console.log('Knowledge update:', payload);
         
-        if (payload.eventType === 'INSERT') {
-          setKnowledge(prev => [...prev, payload.new]);
-        } else if (payload.eventType === 'UPDATE') {
+        if (payload.eventType === 'INSERT' && payload.new) {
+          setKnowledge(prev => [...prev, payload.new as MeetingKnowledge]);
+        } else if (payload.eventType === 'UPDATE' && payload.new) {
           setKnowledge(prev => 
             prev.map(item => 
-              item.id === payload.new.id ? payload.new : item
+              item.id === payload.new!.id ? payload.new as MeetingKnowledge : item
             )
           );
-        } else if (payload.eventType === 'DELETE') {
+        } else if (payload.eventType === 'DELETE' && payload.old) {
           setKnowledge(prev => 
-            prev.filter(item => item.id !== payload.old.id)
+            prev.filter(item => item.id !== payload.old!.id)
           );
         }
       }
@@ -122,17 +123,17 @@ export const useSupabaseSync = ({ meetingId, userId, userName }: UseSupabaseSync
       (payload) => {
         console.log('Participant update:', payload);
         
-        if (payload.eventType === 'INSERT') {
-          setParticipants(prev => [...prev, payload.new]);
-        } else if (payload.eventType === 'UPDATE') {
+        if (payload.eventType === 'INSERT' && payload.new) {
+          setParticipants(prev => [...prev, payload.new as MeetingParticipant]);
+        } else if (payload.eventType === 'UPDATE' && payload.new) {
           setParticipants(prev => 
             prev.map(item => 
-              item.id === payload.new.id ? payload.new : item
+              item.id === payload.new!.id ? payload.new as MeetingParticipant : item
             )
           );
-        } else if (payload.eventType === 'DELETE') {
+        } else if (payload.eventType === 'DELETE' && payload.old) {
           setParticipants(prev => 
-            prev.filter(item => item.id !== payload.old.id)
+            prev.filter(item => item.id !== payload.old!.id)
           );
         }
       }

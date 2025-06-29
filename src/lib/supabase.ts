@@ -194,7 +194,7 @@ export const knowledgeService = {
     return supabase
       .channel(`meeting_knowledge:${meetingId}`)
       .on(
-        'postgres_changes',
+        'postgres_changes' as any,
         {
           event: '*',
           schema: 'public',
@@ -214,7 +214,7 @@ export const realtimeService = {
     return supabase
       .channel(`meeting_participants:${meetingId}`)
       .on(
-        'postgres_changes',
+        'postgres_changes' as any,
         {
           event: '*',
           schema: 'public',

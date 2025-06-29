@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Brain, Plus, MessageSquare, FileText, Lightbulb, X, Search, List, Sparkles, Loader2 } from 'lucide-react';
-import { type MeetingKnowledge } from '../lib/supabase';
+import { type MeetingKnowledge } from '../types/types';
 import { KnowledgeSearch } from './KnowledgeSearch';
 import { useKnowledgeSearch } from '../hooks/useKnowledgeSearch';
 

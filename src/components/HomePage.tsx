@@ -20,7 +20,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 }) => {
   const { signOut, openSignIn, openSignUp } = useClerk();
   const [userName, setUserName] = useState(
-    isSignedIn && user ? (user.fullName || user.firstName || user.emailAddresses[0]?.emailAddress || '') : ''
+    isSignedIn && user ? (user.fullName || user.firstName || user.emailAddresses?.[0]?.emailAddress || '') : ''
   );
   const [roomId, setRoomId] = useState('');
   const [isJoining, setIsJoining] = useState(false);
@@ -80,7 +80,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                       {user?.fullName || user?.firstName || 'User'}
                     </p>
                     <p className="text-gray-400 text-sm">
-                      {user?.emailAddresses[0]?.emailAddress}
+                      {user?.emailAddresses?.[0]?.emailAddress}
                     </p>
                   </div>
                 </div>

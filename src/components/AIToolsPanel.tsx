@@ -84,8 +84,8 @@ export const AIToolsPanel: React.FC<AIToolsPanelProps> = ({
           className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm"
         >
           <option value="">Select {paramName}</option>
-          {paramConfig.enum.map((option: string) => (
-            <option key={option} value={option}>{option}</option>
+          {paramConfig.enum?.map((option) => (
+            <option key={String(option)} value={String(option)}>{String(option)}</option>
           ))}
         </select>
       );
@@ -96,7 +96,7 @@ export const AIToolsPanel: React.FC<AIToolsPanelProps> = ({
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
-            checked={value}
+            checked={Boolean(value)}
             onChange={(e) => handleParameterChange(paramName, e.target.checked)}
             className="rounded"
           />
@@ -186,12 +186,12 @@ export const AIToolsPanel: React.FC<AIToolsPanelProps> = ({
               {expandedTools.has(tool.name) && (
                 <div className="mt-2 ml-6 p-3 bg-gray-800/30 rounded border border-gray-700/30">
                   <h4 className="text-xs font-medium text-gray-300 mb-2">Parameters:</h4>
-                  {Object.entries(tool.parameters.properties).map(([paramName, paramConfig]: [string, ParameterConfig]) => (
+                  {Object.entries(tool.parameters.properties).map(([paramName, paramConfig]) => (
                     <div key={paramName} className="mb-2">
                       <div className="text-xs text-gray-400 mb-1">
                         {paramName} {tool.parameters.required.includes(paramName) && <span className="text-red-400">*</span>}
                       </div>
-                      <div className="text-xs text-gray-500">{paramConfig.description}</div>
+                      <div className="text-xs text-gray-500">{(paramConfig as ParameterConfig).description}</div>
                     </div>
                   ))}
                 </div>
@@ -206,7 +206,7 @@ export const AIToolsPanel: React.FC<AIToolsPanelProps> = ({
             <h3 className="text-sm font-medium text-gray-300 mb-3">Execute: {selectedTool}</h3>
             
             <div className="space-y-3">
-              {Object.entries(selectedToolConfig.parameters.properties).map(([paramName, paramConfig]: [string, ParameterConfig]) => (
+              {Object.entries(selectedToolConfig.parameters.properties).map(([paramName, paramConfig]) => (
                 <div key={paramName}>
                   <label className="block text-xs font-medium text-gray-300 mb-1">
                     {paramName}
@@ -214,8 +214,8 @@ export const AIToolsPanel: React.FC<AIToolsPanelProps> = ({
                       <span className="text-red-400 ml-1">*</span>
                     )}
                   </label>
-                  {renderParameterInput(paramName, paramConfig)}
-                  <p className="text-xs text-gray-500 mt-1">{paramConfig.description}</p>
+                  {renderParameterInput(paramName, paramConfig as ParameterConfig)}
+                  <p className="text-xs text-gray-500 mt-1">{(paramConfig as ParameterConfig).description}</p>
                 </div>
               ))}
               

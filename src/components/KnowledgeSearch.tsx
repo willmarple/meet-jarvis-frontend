@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Search, Filter, Loader2, Brain, Sparkles } from 'lucide-react';
-import { type SearchResult } from '../types/types';
-import { type MeetingKnowledge } from '../lib/supabase';
+import { type SearchResult, type MeetingKnowledge, type SearchFilters } from '../types/types';
 
 interface KnowledgeSearchProps {
   onSearch: (query: string, filters: SearchFilters) => Promise<SearchResult[]>;
@@ -10,12 +9,6 @@ interface KnowledgeSearchProps {
   error: string | null;
 }
 
-export interface SearchFilters {
-  contentType?: MeetingKnowledge['content_type'];
-  source?: MeetingKnowledge['source'];
-  threshold?: number;
-  meetingScope?: 'current' | 'all';
-}
 
 export const KnowledgeSearch: React.FC<KnowledgeSearchProps> = ({
   onSearch,
@@ -251,7 +244,7 @@ export const KnowledgeSearch: React.FC<KnowledgeSearchProps> = ({
                 
                 {result.keywords && result.keywords.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-2">
-                    {result.keywords.map((keyword, index) => (
+                    {result.keywords.map((keyword: string, index: number) => (
                       <span
                         key={index}
                         className="text-xs bg-gray-700/50 text-gray-300 px-2 py-1 rounded"

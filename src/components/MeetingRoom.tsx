@@ -58,7 +58,6 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
     error: voiceError,
     conversationStatus,
     isSpeaking,
-    aiToolsService,
     lastToolCall,
     executeManualTool,
     availableTools
@@ -77,14 +76,14 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
       console.log('🎤 Meeting Room - AI Tool Call executed:', toolCall.name, result);
       // Add tool results to knowledge base if successful
       if (result.success && result.data) {
-        const summary = `AI Tool "${toolCall.name}" executed with parameters: ${JSON.stringify(toolCall.parameters)}. Found ${result.data.results?.length || 0} results.`;
+        const summary = `AI Tool "${toolCall.name}" executed with parameters: ${JSON.stringify(toolCall.parameters)}. Found ${(result.data as any)?.results?.length || 0} results.`;
         addKnowledge(summary, 'context', 'ai');
       }
     },
     meetingContext: {
       meetingId: roomId,
       participants: participants.map(p => p.name),
-      existingKnowledge: knowledge
+      existingKnowledge: knowledge as any
     }
   });
 
@@ -121,8 +120,8 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
 
   // Test AI tools functionality
   const testAITools = async () => {
-    if (!aiToolsService) {
-      console.error('AI Tools service not available');
+    if (availableTools.length === 0) {
+      console.error('AI Tools not available');
       return;
     }
 
@@ -280,15 +279,15 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
 
             <button
               onClick={() => setShowAIToolsPanel(!showAIToolsPanel)}
-              disabled={!aiToolsService}
+              disabled={availableTools.length === 0}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                !aiToolsService
+                availableTools.length === 0
                   ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
                   : showAIToolsPanel 
                     ? 'bg-indigo-600 text-white' 
                     : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
               }`}
-              title={aiToolsService ? 'Open AI Tools Panel' : 'AI Tools not available'}
+              title={availableTools.length > 0 ? 'Open AI Tools Panel' : 'AI Tools not available'}
             >
               <Wrench className="w-4 h-4" />
               AI Tools ({availableTools.length})
@@ -302,9 +301,9 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
             {/* Test AI Tools Button */}
             <button
               onClick={testAITools}
-              disabled={!aiToolsService || testingTools}
+              disabled={availableTools.length === 0 || testingTools}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                !aiToolsService
+                availableTools.length === 0
                   ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
                   : testingTools
                     ? 'bg-orange-600 text-white'
@@ -470,9 +469,13 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
 
       {/* AI Tools Panel */}
       <AIToolsPanel
-        tools={availableTools}
-        onExecuteTool={executeManualTool}
-        lastToolCall={lastToolCall}
+        tools={availableTools.map(name => ({ 
+          name, 
+          description: `AI tool: ${name}`, 
+          parameters: { type: 'object', properties: {}, required: [] } 
+        }))}
+        onExecuteTool={executeManualTool as any}
+        lastToolCall={lastToolCall as any}
         isVisible={showAIToolsPanel}
         onClose={() => setShowAIToolsPanel(false)}
       />

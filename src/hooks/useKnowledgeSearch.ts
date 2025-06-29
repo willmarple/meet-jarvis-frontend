@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 import { useSearchKnowledge } from './useKnowledge';
-import { type SearchResult } from '../types/types';
-import { type SearchFilters } from '../components/KnowledgeSearch';
+import { type SearchResult, type SearchFilters } from '../types/types';
 
 interface UseKnowledgeSearchProps {
   meetingId: string;
@@ -14,7 +13,7 @@ export const useKnowledgeSearch = ({ meetingId }: UseKnowledgeSearchProps) => {
   const abortControllerRef = useRef<AbortController | null>(null);
   const searchMutation = useSearchKnowledge();
 
-  const search = useCallback(async (query: string, filters: SearchFilters = {}) => {
+  const search = useCallback(async (query: string, filters: SearchFilters = {}): Promise<SearchResult[]> => {
     // Cancel previous search
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -45,11 +44,13 @@ export const useKnowledgeSearch = ({ meetingId }: UseKnowledgeSearchProps) => {
       }
 
       setResults(filteredResults);
+      return filteredResults;
     } catch (error: unknown) {
-      if (error.name !== 'AbortError') {
+      if ((error as any)?.name !== 'AbortError') {
         console.error('Search error:', error);
         setResults([]);
       }
+      return [];
     }
   }, [meetingId, searchMutation]);
 
