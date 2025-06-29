@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { AuthWrapper } from './components/AuthWrapper';
 import { HomePage } from './components/HomePage';
 import { MeetingRoom } from './components/MeetingRoom';
-import { AppState, MeetingData } from '@webrtc-converse/shared-types';
+import { AppState, MeetingData } from './types/index.js';
 
 function App() {
   const { user, isSignedIn } = useUser();
