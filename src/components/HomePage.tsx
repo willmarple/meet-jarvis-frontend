@@ -50,118 +50,116 @@ export const HomePage: React.FC<HomePageProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
-      <div className="container mx-auto px-4 py-12">
-        {/* Header with Auth Status */}
-        <div className="flex justify-between items-start mb-16">
-          <div className="text-center flex-1">
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
-                <Video className="w-6 h-6 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 relative">
+      {/* Fixed Authentication UI in upper right */}
+      <div className="fixed top-6 right-6 z-50">
+        {isSignedIn ? (
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                <UserIcon className="w-4 h-4 text-white" />
               </div>
-              <h1 className="text-4xl font-bold text-white">AI Meeting Platform</h1>
+              <div>
+                <p className="text-white font-medium">
+                  {user?.fullName || user?.firstName || 'User'}
+                </p>
+                <p className="text-gray-400 text-sm">
+                  {user?.emailAddresses?.[0]?.emailAddress}
+                </p>
+              </div>
             </div>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
-              Connect with colleagues, friends, and AI assistants in high-quality video meetings. 
-              Built for the future of collaborative communication.
-            </p>
-            
-            {/* Sponsor Logos */}
-            <div className="flex items-center justify-center gap-6 mt-8">
-              <span className="text-gray-400 text-sm">Powered by</span>
-              <div className="flex items-center gap-6">
-                <a 
-                  href="https://bolt.new" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="opacity-60 hover:opacity-100 transition-opacity"
-                  title="Built with Bolt.new"
-                >
-                  <img 
-                    src="/sponsors/bolt-logo-white.svg" 
-                    alt="Bolt.new" 
-                    className="h-8 w-8"
-                  />
-                </a>
-                <a 
-                  href="https://elevenlabs.io" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="opacity-60 hover:opacity-100 transition-opacity"
-                  title="AI Voice powered by ElevenLabs"
-                >
-                  <img 
-                    src="/sponsors/elevenlabs-logo-white.svg" 
-                    alt="ElevenLabs" 
-                    className="h-7 w-7"
-                  />
-                </a>
-                <a 
-                  href="https://netlify.com" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="opacity-60 hover:opacity-100 transition-opacity"
-                  title="Deployed on Netlify"
-                >
-                  <img 
-                    src="/sponsors/netlify-logo-white.svg" 
-                    alt="Netlify" 
-                    className="h-7 w-7"
-                  />
-                </a>
-              </div>
+            <button
+              onClick={() => signOut()}
+              className="flex items-center gap-2 text-gray-400 hover:text-white text-sm transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </button>
+          </div>
+        ) : (
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4">
+            <div className="flex items-center gap-2 text-gray-400 mb-3">
+              <Users className="w-4 h-4" />
+              <span className="text-sm">Guest Mode</span>
+            </div>
+            <div className="space-y-2">
+              <button
+                onClick={() => openSignIn()}
+                className="w-full flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+              >
+                <LogIn className="w-3 h-3" />
+                Sign In
+              </button>
+              <button
+                onClick={() => openSignUp()}
+                className="w-full flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors"
+              >
+                <UserPlus className="w-3 h-3" />
+                Sign Up
+              </button>
             </div>
           </div>
+        )}
+      </div>
 
-          {/* Auth Status */}
-          <div className="ml-8">
-            {isSignedIn ? (
-              <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                    <UserIcon className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">
-                      {user?.fullName || user?.firstName || 'User'}
-                    </p>
-                    <p className="text-gray-400 text-sm">
-                      {user?.emailAddresses?.[0]?.emailAddress}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => signOut()}
-                  className="flex items-center gap-2 text-gray-400 hover:text-white text-sm transition-colors"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Sign Out
-                </button>
-              </div>
-            ) : (
-              <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl p-4">
-                <div className="flex items-center gap-2 text-gray-400 mb-3">
-                  <Users className="w-4 h-4" />
-                  <span className="text-sm">Guest Mode</span>
-                </div>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => openSignIn()}
-                    className="w-full flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
-                  >
-                    <LogIn className="w-3 h-3" />
-                    Sign In
-                  </button>
-                  <button
-                    onClick={() => openSignUp()}
-                    className="w-full flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition-colors"
-                  >
-                    <UserPlus className="w-3 h-3" />
-                    Sign Up
-                  </button>
-                </div>
-              </div>
-            )}
+      <div className="container mx-auto px-4 py-12">
+        {/* Centered Header */}
+        <div className="text-center mb-16">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
+              <Video className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-4xl font-bold text-white">AI Meeting Platform</h1>
+          </div>
+          <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
+            Connect with colleagues, friends, and AI assistants in high-quality video meetings. 
+            Built for the future of collaborative communication.
+          </p>
+          
+          {/* Sponsor Logos */}
+          <div className="flex items-center justify-center gap-6 mt-8">
+            <span className="text-gray-400 text-sm">Powered by</span>
+            <div className="flex items-center gap-6">
+              <a 
+                href="https://bolt.new" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="opacity-60 hover:opacity-100 transition-opacity"
+                title="Built with Bolt.new"
+              >
+                <img 
+                  src="/sponsors/bolt-logo-white.svg" 
+                  alt="Bolt.new" 
+                  className="h-8 w-8"
+                />
+              </a>
+              <a 
+                href="https://elevenlabs.io" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="opacity-60 hover:opacity-100 transition-opacity"
+                title="AI Voice powered by ElevenLabs"
+              >
+                <img 
+                  src="/sponsors/elevenlabs-logo-white.svg" 
+                  alt="ElevenLabs" 
+                  className="h-7 w-7"
+                />
+              </a>
+              <a 
+                href="https://netlify.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="opacity-60 hover:opacity-100 transition-opacity"
+                title="Deployed on Netlify"
+              >
+                <img 
+                  src="/sponsors/netlify-logo-white.svg" 
+                  alt="Netlify" 
+                  className="h-7 w-7"
+                />
+              </a>
+            </div>
           </div>
         </div>
 
