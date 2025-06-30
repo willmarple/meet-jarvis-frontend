@@ -61,10 +61,56 @@ export const HomePage: React.FC<HomePageProps> = ({
               </div>
               <h1 className="text-4xl font-bold text-white">AI Meeting Platform</h1>
             </div>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
               Connect with colleagues, friends, and AI assistants in high-quality video meetings. 
               Built for the future of collaborative communication.
             </p>
+            
+            {/* Sponsor Logos */}
+            <div className="flex items-center justify-center gap-6 mt-8">
+              <span className="text-gray-400 text-sm">Powered by</span>
+              <div className="flex items-center gap-6">
+                <a 
+                  href="https://bolt.new" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="opacity-60 hover:opacity-100 transition-opacity"
+                  title="Built with Bolt.new"
+                >
+                  <img 
+                    src="/sponsors/bolt-logo-white.svg" 
+                    alt="Bolt.new" 
+                    className="h-8 w-8"
+                  />
+                </a>
+                <a 
+                  href="https://elevenlabs.io" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="opacity-60 hover:opacity-100 transition-opacity"
+                  title="AI Voice powered by ElevenLabs"
+                >
+                  <img 
+                    src="/sponsors/elevenlabs-logo-white.svg" 
+                    alt="ElevenLabs" 
+                    className="h-7 w-7"
+                  />
+                </a>
+                <a 
+                  href="https://netlify.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="opacity-60 hover:opacity-100 transition-opacity"
+                  title="Deployed on Netlify"
+                >
+                  <img 
+                    src="/sponsors/netlify-logo-white.svg" 
+                    alt="Netlify" 
+                    className="h-7 w-7"
+                  />
+                </a>
+              </div>
+            </div>
           </div>
 
           {/* Auth Status */}

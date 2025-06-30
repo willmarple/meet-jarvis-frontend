@@ -196,6 +196,50 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
               {roomId}
             </span>
             
+            {/* Sponsor Logos */}
+            <div className="flex items-center gap-3 ml-4 pl-4 border-l border-gray-600">
+              <span className="text-gray-400 text-xs">Powered by</span>
+              <a 
+                href="https://bolt.new" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="opacity-70 hover:opacity-100 transition-opacity"
+                title="Built with Bolt.new"
+              >
+                <img 
+                  src="/sponsors/bolt-logo-white.svg" 
+                  alt="Bolt.new" 
+                  className="h-6 w-6"
+                />
+              </a>
+              <a 
+                href="https://elevenlabs.io" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="opacity-70 hover:opacity-100 transition-opacity"
+                title="AI Voice powered by ElevenLabs"
+              >
+                <img 
+                  src="/sponsors/elevenlabs-logo-white.svg" 
+                  alt="ElevenLabs" 
+                  className="h-5 w-5"
+                />
+              </a>
+              <a 
+                href="https://netlify.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="opacity-70 hover:opacity-100 transition-opacity"
+                title="Deployed on Netlify"
+              >
+                <img 
+                  src="/sponsors/netlify-logo-white.svg" 
+                  alt="Netlify" 
+                  className="h-5 w-5"
+                />
+              </a>
+            </div>
+            
             {/* Auth Status */}
             {isSignedIn ? (
               <span className="bg-green-600/20 text-green-400 px-2 py-1 rounded-full text-xs flex items-center gap-1">
