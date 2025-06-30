@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAuth } from '@clerk/clerk-react';
 import { useWebRTC } from '../hooks/useWebRTC';
 import { useSupabaseSync } from '../hooks/useSupabaseSync';
 import { useElevenLabsVoiceRAG } from '../hooks/useElevenLabsVoiceRAG';
@@ -26,6 +27,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
   onLeave,
   isSignedIn
 }) => {
+  const { getToken } = useAuth();
   const [copied, setCopied] = React.useState(false);
   const [showKnowledgePanel, setShowKnowledgePanel] = React.useState(false);
   const [showAIToolsPanel, setShowAIToolsPanel] = React.useState(false);
@@ -47,8 +49,11 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
     knowledge,
     isConnected: isSupabaseConnected,
     addKnowledge,
-    updateParticipantStatus
-  } = useSupabaseSync({ meetingId: roomId, userId, userName });
+    updateParticipantStatus,
+    isPolling,
+    processingCount,
+    processedCount
+  } = useSupabaseSync({ meetingId: roomId, userId, userName, getToken });
 
   const {
     isConnected: isVoiceConnected,
@@ -79,7 +84,8 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
       meetingId: roomId,
       participants: participants.map(p => p.name),
       existingKnowledge: knowledge.map(k => ({ id: k.id, content: k.content }))
-    }
+    },
+    getToken
   });
 
   const handleLeave = () => {
@@ -148,10 +154,8 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
     }
   };
 
-  // Count AI-enhanced knowledge items
-  const aiEnhancedCount = knowledge.filter(item => 
-    item.embedding && item.keywords && item.summary
-  ).length;
+  // Use processedCount from polling hook (replaces local calculation)
+  const aiEnhancedCount = processedCount;
 
   // Log voice AI state changes
   React.useEffect(() => {
@@ -423,7 +427,9 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
               Connected: {isVoiceConnected ? '✓' : '✗'} | 
               Listening: {isListening ? '✓' : '✗'} | 
               Speaking: {isSpeaking ? '✓' : '✗'} |
-              AI Enhanced: {aiEnhancedCount}/{knowledge.length} |
+              AI Enhanced: {processedCount}/{knowledge.length} |
+              Processing: {processingCount} |
+              Polling: {isPolling ? '✓' : '✗'} |
               Tools: {availableTools.length} |
               Auth: {isSignedIn ? 'Signed In' : 'Guest'}
             </p>

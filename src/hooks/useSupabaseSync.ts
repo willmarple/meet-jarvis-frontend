@@ -1,18 +1,30 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { meetingService, knowledgeService, realtimeService } from '../lib/supabase';
 import { type MeetingKnowledge, type MeetingParticipant } from '../types/types';
+import { useKnowledgePolling } from './useKnowledgePolling';
 
 interface UseSupabaseSyncProps {
   meetingId: string;
   userId: string;
   userName: string;
+  getToken?: () => Promise<string | null>;
 }
 
-export const useSupabaseSync = ({ meetingId, userId, userName }: UseSupabaseSyncProps) => {
+export const useSupabaseSync = ({ meetingId, userId, userName, getToken }: UseSupabaseSyncProps) => {
   const [knowledge, setKnowledge] = useState<MeetingKnowledge[]>([]);
   const [participants, setParticipants] = useState<MeetingParticipant[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const initializationRef = useRef(false);
+  const participantCreatedRef = useRef(false);
+
+  // Polling for knowledge processing updates
+  const { isPolling, processingCount, processedCount } = useKnowledgePolling({
+    meetingId,
+    currentKnowledge: knowledge,
+    onKnowledgeUpdate: setKnowledge,
+    getToken,
+    enabled: isConnected
+  });
 
   // Initialize meeting and participant
   const initializeMeeting = useCallback(async () => {
@@ -44,14 +56,17 @@ export const useSupabaseSync = ({ meetingId, userId, userName }: UseSupabaseSync
         meeting_id: meetingId,
         user_name: userName,
         user_id: userId
-      });
+      }, getToken);
+      
+      // Mark participant as successfully created
+      participantCreatedRef.current = true;
 
       // Load existing knowledge
-      const existingKnowledge = await knowledgeService.getMeetingKnowledge(meetingId);
+      const existingKnowledge = await knowledgeService.getMeetingKnowledge(meetingId, undefined, getToken);
       setKnowledge(existingKnowledge);
 
       // Load existing participants
-      const existingParticipants = await meetingService.getMeetingParticipants(meetingId);
+      const existingParticipants = await meetingService.getMeetingParticipants(meetingId, getToken);
       setParticipants(existingParticipants);
 
       setIsConnected(true);
@@ -60,7 +75,7 @@ export const useSupabaseSync = ({ meetingId, userId, userName }: UseSupabaseSync
       console.error('Error initializing meeting:', error);
       initializationRef.current = false; // Reset on error to allow retry
     }
-  }, [meetingId, userId, userName]);
+  }, [meetingId, userId, userName, getToken]);
 
   // Add knowledge to meeting
   const addKnowledge = useCallback(async (
@@ -74,20 +89,31 @@ export const useSupabaseSync = ({ meetingId, userId, userName }: UseSupabaseSync
         content,
         content_type: contentType,
         source
-      });
+      }, getToken);
+      
+      // Refresh knowledge list after adding new knowledge
+      // (needed because real-time subscriptions don't work with RLS auth)
+      const updatedKnowledge = await knowledgeService.getMeetingKnowledge(meetingId, undefined, getToken);
+      setKnowledge(updatedKnowledge);
     } catch (error) {
       console.error('Error adding knowledge:', error);
     }
-  }, [meetingId]);
+  }, [meetingId, getToken]);
 
   // Update participant status
   const updateParticipantStatus = useCallback(async (isConnected: boolean) => {
+    // Only update status if participant was successfully created
+    if (!participantCreatedRef.current && !isConnected) {
+      console.log('Skipping status update - participant not yet created');
+      return;
+    }
+    
     try {
-      await meetingService.updateParticipantStatus(userId, meetingId, isConnected);
+      await meetingService.updateParticipantStatus(userId, meetingId, isConnected, getToken);
     } catch (error) {
       console.error('Error updating participant status:', error);
     }
-  }, [userId, meetingId]);
+  }, [userId, meetingId, getToken]);
 
   // Set up real-time subscriptions
   useEffect(() => {
@@ -162,6 +188,10 @@ export const useSupabaseSync = ({ meetingId, userId, userName }: UseSupabaseSync
     participants,
     isConnected,
     addKnowledge,
-    updateParticipantStatus
+    updateParticipantStatus,
+    // Polling state for UI feedback
+    isPolling,
+    processingCount,
+    processedCount
   };
 };

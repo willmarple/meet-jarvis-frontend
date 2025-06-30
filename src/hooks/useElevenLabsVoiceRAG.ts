@@ -35,13 +35,15 @@ interface UseElevenLabsVoiceRAGProps {
     participants: string[];
     existingKnowledge: KnowledgeItem[];
   };
+  getToken?: () => Promise<string | null>;
 }
 
 export const useElevenLabsVoiceRAG = ({ 
   onResponse, 
   onTranscription,
   onToolCall,
-  meetingContext 
+  meetingContext,
+  getToken
 }: UseElevenLabsVoiceRAGProps = {}) => {
   const [isSDKReady, setIsSDKReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -174,7 +176,8 @@ export const useElevenLabsVoiceRAG = ({
           console.log('🔧 Executing search_meeting_knowledge:', parameters);
           const result = await searchKnowledgeMutation.mutateAsync({
             params: parameters,
-            meetingId: meetingContext.meetingId
+            meetingId: meetingContext.meetingId,
+            getToken
           });
           
           console.log('🔧 search_meeting_knowledge backend result:', result);
@@ -206,7 +209,8 @@ export const useElevenLabsVoiceRAG = ({
           console.log('🔧 Executing recall_decisions:', parameters);
           const result = await recallDecisionsMutation.mutateAsync({
             params: parameters,
-            meetingId: meetingContext.meetingId
+            meetingId: meetingContext.meetingId,
+            getToken
           });
           
           console.log('🔧 recall_decisions backend result:', result);
@@ -235,7 +239,8 @@ export const useElevenLabsVoiceRAG = ({
           console.log('🔧 Executing get_action_items:', parameters);
           const result = await getActionItemsMutation.mutateAsync({
             params: parameters,
-            meetingId: meetingContext.meetingId
+            meetingId: meetingContext.meetingId,
+            getToken
           });
           
           console.log('🔧 get_action_items result:', result);
@@ -264,7 +269,8 @@ export const useElevenLabsVoiceRAG = ({
           console.log('🔧 Executing summarize_topic:', parameters);
           const result = await summarizeTopicMutation.mutateAsync({
             params: parameters,
-            meetingId: meetingContext.meetingId
+            meetingId: meetingContext.meetingId,
+            getToken
           });
           
           console.log('🔧 summarize_topic backend result:', result);
@@ -292,7 +298,8 @@ export const useElevenLabsVoiceRAG = ({
           console.log('🔧 Executing find_similar_discussions:', parameters);
           const result = await findSimilarDiscussionsMutation.mutateAsync({
             params: parameters,
-            meetingId: meetingContext.meetingId
+            meetingId: meetingContext.meetingId,
+            getToken
           });
           
           console.log('🔧 find_similar_discussions result:', result);
@@ -326,7 +333,8 @@ export const useElevenLabsVoiceRAG = ({
     recallDecisionsMutation,
     getActionItemsMutation,
     summarizeTopicMutation,
-    findSimilarDiscussionsMutation
+    findSimilarDiscussionsMutation,
+    getToken
   ]);
 
   // Use the ElevenLabs conversation hook with client tools and stable callbacks

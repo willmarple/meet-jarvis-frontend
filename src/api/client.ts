@@ -9,14 +9,37 @@ export const apiClient = axios.create({
   },
 })
 
-// Add request interceptor for authentication if needed
+// Function to create an authenticated API client with Clerk token
+export const createAuthenticatedApiClient = async (getToken?: () => Promise<string | null>) => {
+  const client = axios.create({
+    baseURL: `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api`,
+    timeout: 30000,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+
+  // Add auth token if getToken function is provided
+  if (getToken) {
+    try {
+      const token = await getToken()
+      if (token) {
+        client.defaults.headers.Authorization = `Bearer ${token}`
+      }
+    } catch (error) {
+      console.warn('Failed to get auth token:', error)
+    }
+  }
+
+  return client
+}
+
+// Add request interceptor for authentication
 apiClient.interceptors.request.use(
   (config) => {
-    // Add auth token if available
-    const token = localStorage.getItem('auth_token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
+    // Note: Authentication tokens should be added by the calling code
+    // using either the createAuthenticatedApiClient function or by 
+    // manually setting the Authorization header
     return config
   },
   (error) => {

@@ -1,4 +1,4 @@
-import { apiClient } from './client'
+import { apiClient, createAuthenticatedApiClient } from './client'
 import type {
   ApiResponse,
   ToolResult,
@@ -16,29 +16,48 @@ import type {
 } from '../types/types'
 
 /**
- * Execute a specific AI tool
+ * Execute a specific AI tool using secure authentication
  */
 export const executeAITool = async (
   toolName: string,
   parameters: Record<string, unknown>,
-  meetingId?: string
+  meetingId?: string,
+  getToken?: () => Promise<string | null>
 ): Promise<ToolResult> => {
   if (!meetingId) {
     throw new Error('meetingId is required for AI tool execution')
   }
   
-  const { data } = await apiClient.post<ApiResponse<ToolResult> & { result: ToolResult }>('/test/ai-tools', {
-    toolName,
-    parameters,
-    meetingId,
-  })
-  
-  // The backend returns { success: true, message: "...", result: { success: true, data: {...} } }
-  if (!data.success) {
-    throw new Error(data.error || 'API request failed')
+  try {
+    // Try secure endpoint first (requires authentication)
+    const authClient = await createAuthenticatedApiClient(getToken)
+    const { data } = await authClient.post<ApiResponse<ToolResult> & { result: ToolResult }>(`/secure/meetings/${meetingId}/ai-tools`, {
+      toolName,
+      parameters,
+    })
+    
+    // The backend returns { success: true, message: "...", result: { success: true, data: {...} } }
+    if (!data.success) {
+      throw new Error(data.error || 'API request failed')
+    }
+    
+    return data.result || { success: false, error: 'No result returned from backend' }
+  } catch (secureError) {
+    console.warn('Secure AI tools endpoint failed, falling back to test endpoint:', secureError);
+    
+    // Fallback to test endpoint (for development/testing)
+    const { data } = await apiClient.post<ApiResponse<ToolResult> & { result: ToolResult }>('/test/ai-tools', {
+      toolName,
+      parameters,
+      meetingId,
+    })
+    
+    if (!data.success) {
+      throw new Error(data.error || 'API request failed')
+    }
+    
+    return data.result || { success: false, error: 'No result returned from backend' }
   }
-  
-  return data.result || { success: false, error: 'No result returned from backend' }
 }
 
 /**
@@ -46,9 +65,10 @@ export const executeAITool = async (
  */
 export const searchMeetingKnowledge = async (
   params: SearchParams,
-  meetingId?: string
+  meetingId?: string,
+  getToken?: () => Promise<string | null>
 ): Promise<SearchKnowledgeResult> => {
-  const result = await executeAITool('search_meeting_knowledge', params as unknown as Record<string, unknown>, meetingId)
+  const result = await executeAITool('search_meeting_knowledge', params as unknown as Record<string, unknown>, meetingId, getToken)
   
   if (!result.success) {
     throw new Error(result.error || 'Search failed')
@@ -62,9 +82,10 @@ export const searchMeetingKnowledge = async (
  */
 export const recallDecisions = async (
   params: RecallDecisionsParams,
-  meetingId?: string
+  meetingId?: string,
+  getToken?: () => Promise<string | null>
 ): Promise<RecallDecisionsResult> => {
-  const result = await executeAITool('recall_decisions', params as unknown as Record<string, unknown>, meetingId)
+  const result = await executeAITool('recall_decisions', params as unknown as Record<string, unknown>, meetingId, getToken)
   
   if (!result.success) {
     throw new Error(result.error || 'Recall decisions failed')
@@ -78,9 +99,10 @@ export const recallDecisions = async (
  */
 export const getActionItems = async (
   params: GetActionItemsParams,
-  meetingId?: string
+  meetingId?: string,
+  getToken?: () => Promise<string | null>
 ): Promise<ActionItemsResult> => {
-  const result = await executeAITool('get_action_items', params as unknown as Record<string, unknown>, meetingId)
+  const result = await executeAITool('get_action_items', params as unknown as Record<string, unknown>, meetingId, getToken)
   
   if (!result.success) {
     throw new Error(result.error || 'Get action items failed')
@@ -94,9 +116,10 @@ export const getActionItems = async (
  */
 export const summarizeTopic = async (
   params: SummarizeTopicParams,
-  meetingId?: string
+  meetingId?: string,
+  getToken?: () => Promise<string | null>
 ): Promise<TopicSummaryResult> => {
-  const result = await executeAITool('summarize_topic', params as unknown as Record<string, unknown>, meetingId)
+  const result = await executeAITool('summarize_topic', params as unknown as Record<string, unknown>, meetingId, getToken)
   
   if (!result.success) {
     throw new Error(result.error || 'Summarize topic failed')
@@ -110,9 +133,10 @@ export const summarizeTopic = async (
  */
 export const findSimilarDiscussions = async (
   params: FindSimilarDiscussionsParams,
-  meetingId?: string
+  meetingId?: string,
+  getToken?: () => Promise<string | null>
 ): Promise<SimilarDiscussionsResult> => {
-  const result = await executeAITool('find_similar_discussions', params as unknown as Record<string, unknown>, meetingId)
+  const result = await executeAITool('find_similar_discussions', params as unknown as Record<string, unknown>, meetingId, getToken)
   
   if (!result.success) {
     throw new Error(result.error || 'Find similar discussions failed')

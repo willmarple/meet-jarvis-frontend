@@ -77,100 +77,194 @@ export const meetingService = {
     return data as Meeting;
   },
 
-  // Add participant to meeting - uses upsert to handle existing participants
+  // Add participant to meeting using secure API
   async addParticipant(participantData: {
     meeting_id: string;
     user_name: string;
     user_id: string;
-  }) {
-    const { data, error } = await supabase
-      .from('meeting_participants')
-      .upsert([{
-        ...participantData,
-        is_connected: true,
-        joined_at: new Date().toISOString(),
-        left_at: null
-      }], {
-        onConflict: 'meeting_id,user_id'
-      })
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data as MeetingParticipant;
+  }, getToken?: () => Promise<string | null>) {
+    // Try to use secure API first (if authenticated)
+    try {
+      const { createAuthenticatedApiClient } = await import('../api/client');
+      const authClient = await createAuthenticatedApiClient(getToken);
+      
+      const response = await authClient.post(`/secure/meetings/${participantData.meeting_id}/participants`, {
+        user_name: participantData.user_name,
+        user_id: participantData.user_id
+      });
+      
+      if (response.data && !response.data.error) {
+        return response.data as MeetingParticipant;
+      }
+      throw new Error(response.data?.error || 'Failed to add participant');
+    } catch (apiError) {
+      console.warn('Secure API failed, falling back to direct Supabase (will fail if RLS is enabled):', apiError);
+      
+      // Fallback to direct Supabase (for backward compatibility, but will likely fail due to RLS)
+      const { data, error } = await supabase
+        .from('meeting_participants')
+        .upsert([{
+          ...participantData,
+          is_connected: true,
+          joined_at: new Date().toISOString(),
+          left_at: null
+        }], {
+          onConflict: 'meeting_id,user_id'
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data as MeetingParticipant;
+    }
   },
 
-  // Update participant connection status - handles missing records gracefully
-  async updateParticipantStatus(userId: string, meetingId: string, isConnected: boolean): Promise<void> {
-    const updateData: { is_connected: boolean; left_at?: string } = { is_connected: isConnected };
-    if (!isConnected) {
-      updateData.left_at = new Date().toISOString();
-    }
+  // Update participant connection status using secure API
+  async updateParticipantStatus(userId: string, meetingId: string, isConnected: boolean, getToken?: () => Promise<string | null>): Promise<void> {
+    // Try to use secure API first (if authenticated)
+    try {
+      const { createAuthenticatedApiClient } = await import('../api/client');
+      const authClient = await createAuthenticatedApiClient(getToken);
+      
+      const response = await authClient.put(`/secure/meetings/${meetingId}/participants/${userId}/status`, {
+        is_connected: isConnected
+      });
+      
+      if (response.data && !response.data.error) {
+        return; // Success
+      }
+      throw new Error(response.data?.error || 'Failed to update participant status');
+    } catch (apiError) {
+      console.warn('Secure API failed, falling back to direct Supabase (will fail if RLS is enabled):', apiError);
+      
+      // Fallback to direct Supabase (for backward compatibility, but will likely fail due to RLS)
+      const updateData: { is_connected: boolean; left_at?: string } = { is_connected: isConnected };
+      if (!isConnected) {
+        updateData.left_at = new Date().toISOString();
+      }
 
-    const { count, error } = await supabase
-      .from('meeting_participants')
-      .update(updateData)
-      .eq('user_id', userId)
-      .eq('meeting_id', meetingId);
-    
-    if (error) throw error;
-    
-    if (count === 0) {
-      console.warn(`No participant found for user ${userId} in meeting ${meetingId}`);
+      const { count, error } = await supabase
+        .from('meeting_participants')
+        .update(updateData)
+        .eq('user_id', userId)
+        .eq('meeting_id', meetingId);
+      
+      if (error) throw error;
+      
+      if (count === 0) {
+        console.warn(`No participant found for user ${userId} in meeting ${meetingId}`);
+      }
     }
   },
 
-  // Get meeting participants
-  async getMeetingParticipants(meetingId: string) {
-    const { data, error } = await supabase
-      .from('meeting_participants')
-      .select('*')
-      .eq('meeting_id', meetingId)
-      .eq('is_connected', true);
-    
-    if (error) throw error;
-    return data as MeetingParticipant[];
+  // Get meeting participants using secure API
+  async getMeetingParticipants(meetingId: string, getToken?: () => Promise<string | null>) {
+    // Try to use secure API first (if authenticated)
+    try {
+      const { createAuthenticatedApiClient } = await import('../api/client');
+      const authClient = await createAuthenticatedApiClient(getToken);
+      
+      const response = await authClient.get(`/secure/meetings/${meetingId}/participants`);
+      
+      if (response.data && !response.data.error) {
+        return response.data as MeetingParticipant[];
+      }
+      throw new Error(response.data?.error || 'Failed to get participants');
+    } catch (apiError) {
+      console.warn('Secure API failed, falling back to direct Supabase (will fail if RLS is enabled):', apiError);
+      
+      // Fallback to direct Supabase (for backward compatibility, but will likely fail due to RLS)
+      const { data, error } = await supabase
+        .from('meeting_participants')
+        .select('*')
+        .eq('meeting_id', meetingId)
+        .eq('is_connected', true);
+      
+      if (error) throw error;
+      return data as MeetingParticipant[];
+    }
   }
 };
 
 // Knowledge Base Functions
 export const knowledgeService = {
-  // Add knowledge to meeting
+  // Add knowledge to meeting using secure API
   async addKnowledge(knowledgeData: {
     meeting_id: string;
     content: string;
     content_type: MeetingKnowledge['content_type'];
     source: MeetingKnowledge['source'];
-  }) {
-    const { data, error } = await supabase
-      .from('meeting_knowledge')
-      .insert([{
-        ...knowledgeData,
-        updated_at: new Date().toISOString()
-      }])
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return data as MeetingKnowledge;
+  }, getToken?: () => Promise<string | null>) {
+    // Try to use secure API first (if authenticated)
+    try {
+      const { createAuthenticatedApiClient } = await import('../api/client');
+      const authClient = await createAuthenticatedApiClient(getToken);
+      const response = await authClient.post(`/secure/meetings/${knowledgeData.meeting_id}/knowledge`, {
+        content: knowledgeData.content,
+        content_type: knowledgeData.content_type,
+        source: knowledgeData.source
+      });
+      
+      if (response.data.success) {
+        return response.data.data as MeetingKnowledge;
+      }
+      throw new Error(response.data.error || 'Failed to add knowledge');
+    } catch (apiError) {
+      console.warn('Secure API failed, falling back to direct Supabase (will fail if RLS is enabled):', apiError);
+      
+      // Fallback to direct Supabase (for backward compatibility, but will likely fail due to RLS)
+      const { data, error } = await supabase
+        .from('meeting_knowledge')
+        .insert([{
+          ...knowledgeData,
+          updated_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data as MeetingKnowledge;
+    }
   },
 
-  // Get meeting knowledge
-  async getMeetingKnowledge(meetingId: string, contentType?: string) {
-    let query = supabase
-      .from('meeting_knowledge')
-      .select('*')
-      .eq('meeting_id', meetingId)
-      .order('created_at', { ascending: true });
-    
-    if (contentType) {
-      query = query.eq('content_type', contentType);
+  // Get meeting knowledge using secure API
+  async getMeetingKnowledge(meetingId: string, contentType?: string, getToken?: () => Promise<string | null>) {
+    // Try to use secure API first (if authenticated)
+    try {
+      const { createAuthenticatedApiClient } = await import('../api/client');
+      const authClient = await createAuthenticatedApiClient(getToken);
+      const response = await authClient.get(`/secure/meetings/${meetingId}/knowledge`);
+      
+      if (response.data.success) {
+        let data = response.data.data as MeetingKnowledge[];
+        
+        // Apply content type filter if specified
+        if (contentType) {
+          data = data.filter(item => item.content_type === contentType);
+        }
+        
+        return data;
+      }
+      throw new Error(response.data.error || 'Failed to get knowledge');
+    } catch (apiError) {
+      console.warn('Secure API failed, falling back to direct Supabase (will fail if RLS is enabled):', apiError);
+      
+      // Fallback to direct Supabase (for backward compatibility, but will likely fail due to RLS)
+      let query = supabase
+        .from('meeting_knowledge')
+        .select('*')
+        .eq('meeting_id', meetingId)
+        .order('created_at', { ascending: true });
+      
+      if (contentType) {
+        query = query.eq('content_type', contentType);
+      }
+      
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      return data as MeetingKnowledge[];
     }
-    
-    const { data, error } = await query;
-    
-    if (error) throw error;
-    return data as MeetingKnowledge[];
   },
 
   // Update knowledge

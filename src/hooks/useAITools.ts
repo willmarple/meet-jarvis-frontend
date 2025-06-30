@@ -32,11 +32,13 @@ export const useExecuteAITool = () => {
       toolName,
       parameters,
       meetingId,
+      getToken,
     }: {
       toolName: string
       parameters: Record<string, unknown>
       meetingId?: string
-    }) => executeAITool(toolName, parameters, meetingId),
+      getToken?: () => Promise<string | null>
+    }) => executeAITool(toolName, parameters, meetingId, getToken),
   })
 }
 
@@ -45,8 +47,8 @@ export const useExecuteAITool = () => {
  */
 export const useSearchMeetingKnowledge = () => {
   return useMutation({
-    mutationFn: ({ params, meetingId }: { params: SearchParams; meetingId?: string }) =>
-      searchMeetingKnowledge(params, meetingId),
+    mutationFn: ({ params, meetingId, getToken }: { params: SearchParams; meetingId?: string; getToken?: () => Promise<string | null> }) =>
+      searchMeetingKnowledge(params, meetingId, getToken),
   })
 }
 
@@ -55,8 +57,8 @@ export const useSearchMeetingKnowledge = () => {
  */
 export const useRecallDecisions = () => {
   return useMutation({
-    mutationFn: ({ params, meetingId }: { params: RecallDecisionsParams; meetingId?: string }) =>
-      recallDecisions(params, meetingId),
+    mutationFn: ({ params, meetingId, getToken }: { params: RecallDecisionsParams; meetingId?: string; getToken?: () => Promise<string | null> }) =>
+      recallDecisions(params, meetingId, getToken),
   })
 }
 
@@ -65,8 +67,8 @@ export const useRecallDecisions = () => {
  */
 export const useGetActionItems = () => {
   return useMutation({
-    mutationFn: ({ params, meetingId }: { params: GetActionItemsParams; meetingId?: string }) =>
-      getActionItems(params, meetingId),
+    mutationFn: ({ params, meetingId, getToken }: { params: GetActionItemsParams; meetingId?: string; getToken?: () => Promise<string | null> }) =>
+      getActionItems(params, meetingId, getToken),
   })
 }
 
@@ -75,8 +77,8 @@ export const useGetActionItems = () => {
  */
 export const useSummarizeTopic = () => {
   return useMutation({
-    mutationFn: ({ params, meetingId }: { params: SummarizeTopicParams; meetingId?: string }) =>
-      summarizeTopic(params, meetingId),
+    mutationFn: ({ params, meetingId, getToken }: { params: SummarizeTopicParams; meetingId?: string; getToken?: () => Promise<string | null> }) =>
+      summarizeTopic(params, meetingId, getToken),
   })
 }
 
@@ -85,8 +87,8 @@ export const useSummarizeTopic = () => {
  */
 export const useFindSimilarDiscussions = () => {
   return useMutation({
-    mutationFn: ({ params, meetingId }: { params: FindSimilarDiscussionsParams; meetingId?: string }) =>
-      findSimilarDiscussions(params, meetingId),
+    mutationFn: ({ params, meetingId, getToken }: { params: FindSimilarDiscussionsParams; meetingId?: string; getToken?: () => Promise<string | null> }) =>
+      findSimilarDiscussions(params, meetingId, getToken),
   })
 }
 
