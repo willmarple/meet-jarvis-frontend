@@ -23,13 +23,22 @@ export const executeAITool = async (
   parameters: Record<string, unknown>,
   meetingId?: string
 ): Promise<ToolResult> => {
-  const { data } = await apiClient.post<ApiResponse<ToolResult>>('/test/ai-tools', {
+  if (!meetingId) {
+    throw new Error('meetingId is required for AI tool execution')
+  }
+  
+  const { data } = await apiClient.post<ApiResponse<ToolResult> & { result: ToolResult }>('/test/ai-tools', {
     toolName,
     parameters,
-    meetingId: meetingId || 'TASKFLOW-DEMO',
+    meetingId,
   })
   
-  return data.data || { success: false, error: 'No result returned' }
+  // The backend returns { success: true, message: "...", result: { success: true, data: {...} } }
+  if (!data.success) {
+    throw new Error(data.error || 'API request failed')
+  }
+  
+  return data.result || { success: false, error: 'No result returned from backend' }
 }
 
 /**
@@ -118,8 +127,12 @@ export const findSimilarDiscussions = async (
 export const testElevenLabsIntegration = async (
   meetingId?: string
 ): Promise<ElevenLabsTestResult> => {
+  if (!meetingId) {
+    throw new Error('meetingId is required for ElevenLabs integration test')
+  }
+  
   const { data } = await apiClient.post<ApiResponse<ElevenLabsTestResult>>('/test/elevenlabs-tools', {
-    meetingId: meetingId || 'TASKFLOW-DEMO',
+    meetingId,
   })
   
   if (!data.success) {

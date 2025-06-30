@@ -94,7 +94,7 @@ export const useFindSimilarDiscussions = () => {
  * Hook for testing ElevenLabs integration
  * This is a query (not mutation) because it's safe to run multiple times
  */
-export const useElevenLabsIntegrationTest = (meetingId: string = 'TASKFLOW-DEMO') => {
+export const useElevenLabsIntegrationTest = (meetingId: string) => {
   return useQuery({
     queryKey: aiToolsKeys.elevenLabsTest(meetingId),
     queryFn: () => testElevenLabsIntegration(meetingId),
@@ -113,10 +113,12 @@ export const useTestElevenLabsIntegration = () => {
     mutationFn: (meetingId?: string) => testElevenLabsIntegration(meetingId),
     onSuccess: (data, meetingId) => {
       // Update the query cache with fresh data
-      queryClient.setQueryData(
-        aiToolsKeys.elevenLabsTest(meetingId || 'TASKFLOW-DEMO'),
-        data
-      )
+      if (meetingId) {
+        queryClient.setQueryData(
+          aiToolsKeys.elevenLabsTest(meetingId),
+          data
+        )
+      }
     },
   })
 }

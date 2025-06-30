@@ -12,9 +12,13 @@ export const searchKnowledge = async (
   query: string,
   meetingId?: string
 ): Promise<SearchResult[]> => {
+  if (!meetingId) {
+    throw new Error('meetingId is required for knowledge search')
+  }
+  
   const { data } = await apiClient.post<ApiResponse<{ results: SearchResult[] }>>('/test/rag-search', {
     query,
-    meetingId: meetingId || 'TASKFLOW-DEMO',
+    meetingId,
   })
   
   if (!data.success) {
@@ -55,9 +59,13 @@ export const getKnowledgeStatus = async (): Promise<{
 export const runKnowledgeHealthCheck = async (
   meetingId?: string
 ): Promise<KnowledgeHealthResult> => {
+  if (!meetingId) {
+    throw new Error('meetingId is required for knowledge health check')
+  }
+  
   const { data } = await apiClient.get<ApiResponse<KnowledgeHealthResult>>('/test/knowledge-comprehensive', {
     params: {
-      meetingId: meetingId || 'TASKFLOW-DEMO',
+      meetingId,
     },
   })
   

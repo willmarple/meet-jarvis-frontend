@@ -64,22 +64,16 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
   } = useElevenLabsVoiceRAG({
     onResponse: (response) => {
       console.log('🎤 Meeting Room - AI Response received:', response.substring(0, 100) + '...');
-      // Add AI responses to knowledge base
-      addKnowledge(response, 'answer', 'ai');
+      // DO NOT store AI responses in knowledge base - only store human participant contributions
     },
     onTranscription: (transcription) => {
       console.log('🎤 Meeting Room - User transcription received:', transcription.substring(0, 100) + '...');
-      // Optionally add user transcriptions to knowledge base as questions
-      addKnowledge(transcription, 'question', 'user');
+      // DO NOT automatically store transcriptions - many are just queries to the AI agent
+      // Users should manually add important meeting content through the knowledge panel
     },
     onToolCall: (toolCall, result) => {
       console.log('🎤 Meeting Room - AI Tool Call executed:', toolCall.name, result);
-      // Add tool results to knowledge base if successful
-      if (result.success && result.data) {
-        const resultData = result.data as { results?: unknown[] };
-        const summary = `AI Tool "${toolCall.name}" executed with parameters: ${JSON.stringify(toolCall.parameters)}. Found ${resultData?.results?.length || 0} results.`;
-        addKnowledge(summary, 'context', 'ai');
-      }
+      // DO NOT store AI tool call results in knowledge base - they are agent responses, not meeting content
     },
     meetingContext: {
       meetingId: roomId,
@@ -145,14 +139,7 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
       
       console.log('🔧 Action items test result:', actionResult);
       
-      // Add test results to knowledge
-      if (searchResult?.success) {
-        addKnowledge(
-          `AI Tools Test: Successfully searched for "performance issues" and found ${(searchResult.data as { results?: unknown[] })?.results?.length || 0} results.`,
-          'context',
-          'ai'
-        );
-      }
+      // DO NOT add test results to knowledge base - these are system tests, not meeting content
       
     } catch (error) {
       console.error('🔧 AI Tools test failed:', error);
@@ -470,11 +457,93 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
 
       {/* AI Tools Panel */}
       <AIToolsPanel
-        tools={availableTools.map(name => ({ 
-          name, 
-          description: `AI tool: ${name}`, 
-          parameters: { type: 'object', properties: {}, required: [] } 
-        }))}
+        tools={availableTools.map(name => {
+          // Define proper parameters for each tool
+          const toolConfigs = {
+            search_meeting_knowledge: {
+              name,
+              description: 'Search meeting knowledge using semantic search',
+              parameters: {
+                type: 'object',
+                properties: {
+                  query: { type: 'string', description: 'Search query text' },
+                  content_type: { 
+                    type: 'string', 
+                    description: 'Filter by content type',
+                    enum: ['fact', 'context', 'summary', 'question', 'answer']
+                  },
+                  limit: { type: 'number', description: 'Maximum number of results (default: 10)' }
+                },
+                required: ['query']
+              }
+            },
+            recall_decisions: {
+              name,
+              description: 'Recall specific decisions made in meetings',
+              parameters: {
+                type: 'object',
+                properties: {
+                  topic: { 
+                    type: 'string', 
+                    description: 'Topic or subject area to search for decisions about (e.g., "REST API authentication", "Acme Industries JWT tokens")'
+                  }
+                },
+                required: ['topic']
+              }
+            },
+            get_action_items: {
+              name,
+              description: 'Retrieve action items and tasks from meeting discussions',
+              parameters: {
+                type: 'object',
+                properties: {
+                  status: { 
+                    type: 'string', 
+                    description: 'Filter by status',
+                    enum: ['all', 'pending', 'completed', 'in_progress']
+                  },
+                  assignee: { type: 'string', description: 'Filter by person assigned (optional)' }
+                },
+                required: ['status']
+              }
+            },
+            summarize_topic: {
+              name,
+              description: 'Generate a summary of discussions on a specific topic',
+              parameters: {
+                type: 'object',
+                properties: {
+                  topic: { 
+                    type: 'string', 
+                    description: 'Topic to summarize (e.g., "authentication decisions", "project requirements")'
+                  }
+                },
+                required: ['topic']
+              }
+            },
+            find_similar_discussions: {
+              name,
+              description: 'Find similar discussions or topics from meeting history',
+              parameters: {
+                type: 'object',
+                properties: {
+                  topic: { 
+                    type: 'string', 
+                    description: 'Topic to find similar discussions for'
+                  },
+                  limit: { type: 'number', description: 'Maximum number of results (default: 5)' }
+                },
+                required: ['topic']
+              }
+            }
+          };
+          
+          return toolConfigs[name as keyof typeof toolConfigs] || {
+            name,
+            description: `AI tool: ${name}`,
+            parameters: { type: 'object', properties: {}, required: [] }
+          };
+        })}
         onExecuteTool={executeManualTool}
         lastToolCall={lastToolCall}
         isVisible={showAIToolsPanel}

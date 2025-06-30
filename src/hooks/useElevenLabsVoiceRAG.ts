@@ -7,7 +7,7 @@ import {
   useSummarizeTopic, 
   useFindSimilarDiscussions 
 } from './useAITools';
-import type { GetActionItemsParams, FindSimilarDiscussionsParams, ToolCall as ImportedToolCall, JsonValue } from '../types/types';
+import type { GetActionItemsParams, FindSimilarDiscussionsParams, ToolCall as ImportedToolCall, ToolResult, JsonValue } from '../types/types';
 
 interface KnowledgeItem {
   id: string;
@@ -17,12 +17,6 @@ interface KnowledgeItem {
 
 // Use the imported ToolCall type for consistency
 type ToolCall = ImportedToolCall;
-
-interface ToolResult {
-  success: boolean;
-  data?: unknown;
-  error?: string;
-}
 
 interface ElevenLabsMessage {
   type?: string;
@@ -77,6 +71,7 @@ export const useElevenLabsVoiceRAG = ({
 
   console.log('🎤 ElevenLabs RAG Hook - Initializing with:', {
     agentId: agentId ? `${agentId.substring(0, 8)}...` : 'NOT SET',
+    fullAgentId: agentId, // Show full agent ID for debugging
     hasOnResponse: !!onResponse,
     hasOnTranscription: !!onTranscription,
     hasClientTools: !!meetingContext,
@@ -166,9 +161,14 @@ export const useElevenLabsVoiceRAG = ({
 
   // Create client tools configuration for ElevenLabs
   const clientTools = useMemo(() => {
-    if (!meetingContext) return undefined;
+    console.log('🔧 clientTools useMemo - meetingContext:', meetingContext ? 'AVAILABLE' : 'NULL');
     
-    return {
+    if (!meetingContext) {
+      console.log('🔧 No meeting context - returning undefined clientTools');
+      return undefined;
+    }
+    
+    const tools = {
       search_meeting_knowledge: async (parameters: { query: string; content_type?: string; limit?: number }) => {
         try {
           console.log('🔧 Executing search_meeting_knowledge:', parameters);
@@ -176,10 +176,28 @@ export const useElevenLabsVoiceRAG = ({
             params: parameters,
             meetingId: meetingContext.meetingId
           });
-          return JSON.stringify(result);
+          
+          console.log('🔧 search_meeting_knowledge backend result:', result);
+          
+          // Return a simple string response that ElevenLabs can easily understand
+          if (result.results && result.results.length > 0) {
+            const topResults = result.results.slice(0, 3);
+            const formattedResults = topResults.map((r, i) => 
+              `${i + 1}. ${r.content} (${Math.round(r.similarity * 100)}% match)`
+            ).join('\n');
+            const response = `KNOWLEDGE FOUND: Found ${result.results.length} items about "${parameters.query}":\n${formattedResults}`;
+            console.log('🔧 search_meeting_knowledge returning:', response);
+            return response;
+          } else {
+            const response = `No knowledge items found matching "${parameters.query}" in the meeting.`;
+            console.log('🔧 search_meeting_knowledge returning:', response);
+            return response;
+          }
         } catch (error) {
           console.error('🔧 Tool execution failed - search_meeting_knowledge:', error);
-          throw error;
+          const response = `Error searching for "${parameters.query}": ${error instanceof Error ? error.message : 'Unknown error'}`;
+          console.log('🔧 search_meeting_knowledge returning error:', response);
+          return response;
         }
       },
       
@@ -190,10 +208,25 @@ export const useElevenLabsVoiceRAG = ({
             params: parameters,
             meetingId: meetingContext.meetingId
           });
-          return JSON.stringify(result);
+          
+          console.log('🔧 recall_decisions backend result:', result);
+          
+          // Return a simple string response that ElevenLabs can easily understand
+          if (result.decisions && result.decisions.length > 0) {
+            const topDecision = result.decisions[0];
+            const response = `DECISION FOUND: ${topDecision.content} (Confidence: ${Math.round(topDecision.similarity * 100)}%)`;
+            console.log('🔧 recall_decisions returning:', response);
+            return response;
+          } else {
+            const response = `No decisions found about ${parameters.topic} in the meeting knowledge base.`;
+            console.log('🔧 recall_decisions returning:', response);
+            return response;
+          }
         } catch (error) {
           console.error('🔧 Tool execution failed - recall_decisions:', error);
-          throw error;
+          const response = `Error searching for decisions about ${parameters.topic}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+          console.log('🔧 recall_decisions returning error:', response);
+          return response;
         }
       },
       
@@ -204,10 +237,25 @@ export const useElevenLabsVoiceRAG = ({
             params: parameters,
             meetingId: meetingContext.meetingId
           });
-          return JSON.stringify(result);
+          
+          console.log('🔧 get_action_items result:', result);
+          
+          // Return a simple string response that ElevenLabs can easily understand
+          if (result.action_items && result.action_items.length > 0) {
+            const itemsList = result.action_items.map((item: { content: string }) => item.content).join('; ');
+            const response = `ACTION ITEMS (${parameters.status || 'all'}): ${itemsList}`;
+            console.log('🔧 get_action_items returning:', response);
+            return response;
+          } else {
+            const response = `No action items found for status: ${parameters.status || 'all'}`;
+            console.log('🔧 get_action_items returning:', response);
+            return response;
+          }
         } catch (error) {
           console.error('🔧 Tool execution failed - get_action_items:', error);
-          throw error;
+          const response = `Error retrieving action items for status ${parameters.status || 'all'}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+          console.log('🔧 get_action_items returning error:', response);
+          return response;
         }
       },
       
@@ -218,10 +266,24 @@ export const useElevenLabsVoiceRAG = ({
             params: parameters,
             meetingId: meetingContext.meetingId
           });
-          return JSON.stringify(result);
+          
+          console.log('🔧 summarize_topic backend result:', result);
+          
+          // Return a simple string response that ElevenLabs can easily understand
+          if (result.summary) {
+            const response = `TOPIC SUMMARY: ${result.summary}`;
+            console.log('🔧 summarize_topic returning:', response);
+            return response;
+          } else {
+            const response = `No summary available for topic "${parameters.topic}".`;
+            console.log('🔧 summarize_topic returning:', response);
+            return response;
+          }
         } catch (error) {
           console.error('🔧 Tool execution failed - summarize_topic:', error);
-          throw error;
+          const response = `Error summarizing topic "${parameters.topic}": ${error instanceof Error ? error.message : 'Unknown error'}`;
+          console.log('🔧 summarize_topic returning error:', response);
+          return response;
         }
       },
       
@@ -232,13 +294,32 @@ export const useElevenLabsVoiceRAG = ({
             params: parameters,
             meetingId: meetingContext.meetingId
           });
-          return JSON.stringify(result);
+          
+          console.log('🔧 find_similar_discussions result:', result);
+          
+          // Return a simple string response that ElevenLabs can easily understand
+          if (result.similar_discussions && result.similar_discussions.length > 0) {
+            const topDiscussion = result.similar_discussions[0];
+            const response = `SIMILAR DISCUSSIONS: Found ${result.similar_discussions.length} discussions. Top match: ${topDiscussion.content} (${Math.round(topDiscussion.similarity * 100)}% match)`;
+            console.log('🔧 find_similar_discussions returning:', response);
+            return response;
+          } else {
+            const response = `No similar discussions found for: ${parameters.reference_text}`;
+            console.log('🔧 find_similar_discussions returning:', response);
+            return response;
+          }
         } catch (error) {
           console.error('🔧 Tool execution failed - find_similar_discussions:', error);
-          throw error;
+          const response = `Error finding similar discussions for "${parameters.reference_text}": ${error instanceof Error ? error.message : 'Unknown error'}`;
+          console.log('🔧 find_similar_discussions returning error:', response);
+          return response;
         }
       }
     };
+    
+    console.log('🔧 Client tools created successfully:', Object.keys(tools));
+    console.log('🔧 Tools registered:', tools);
+    return tools;
   }, [
     meetingContext,
     searchKnowledgeMutation,
@@ -249,6 +330,8 @@ export const useElevenLabsVoiceRAG = ({
   ]);
 
   // Use the ElevenLabs conversation hook with client tools and stable callbacks
+  console.log('🔧 Passing clientTools to useConversation:', clientTools ? Object.keys(clientTools) : 'undefined');
+  
   const conversation = useConversation({
     clientTools,
     onConnect: onConnectCallback,
@@ -289,6 +372,9 @@ export const useElevenLabsVoiceRAG = ({
       }
 
       // Start the conversation - tools are now configured via clientTools
+      console.log('🔧 Starting session with agent ID:', agentId);
+      console.log('🔧 Client tools available for session:', clientTools ? Object.keys(clientTools) : 'none');
+      
       await conversation.startSession({
         agentId: agentId!
       });
@@ -334,7 +420,7 @@ export const useElevenLabsVoiceRAG = ({
   }, [conversation.status, connect, disconnect]);
 
   // Manual tool execution for testing
-  const executeManualTool = useCallback(async (toolName: string, parameters: unknown) => {
+  const executeManualTool = useCallback(async (toolName: string, parameters: JsonValue): Promise<ToolResult> => {
     if (!meetingContext || !clientTools) {
       console.error('Meeting context or client tools not available for tool execution');
       return { success: false, error: 'Meeting context or client tools not available' };
@@ -350,7 +436,7 @@ export const useElevenLabsVoiceRAG = ({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = await tool(parameters as any);
       setLastToolCall({ name: toolName, parameters: parameters as Record<string, JsonValue> });
-      return { success: true, data: result };
+      return { success: true, data: result as JsonValue };
     } catch (error) {
       console.error('Manual tool execution error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
