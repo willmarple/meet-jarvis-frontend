@@ -69,33 +69,22 @@ function App() {
         return;
       }
       
-      // Check if we're in webcontainer mode via environment variable or URL detection
-      const isWebContainer = import.meta.env.VITE_WEBCONTAINER_MODE === 'true' ||
-                             window.location.hostname.includes('webcontainer-api.io') ||
-                             window.location.hostname.includes('stackblitz.io') ||
-                             window.location.hostname.includes('bolt.new');
-      
-      // Check if user is authenticated before allowing meeting creation (unless in webcontainer dev mode)
-      if (!isWebContainer && (!isSignedIn || !user)) {
+      // Check if user is authenticated before allowing meeting creation
+      if (!isSignedIn || !user) {
         alert('Please sign in to create meetings. You can still join meetings with a meeting ID.');
         throw new Error('Authentication required');
       }
 
-      // Get auth token from Clerk (or use bypass in webcontainer)
+      // Get auth token from Clerk
       let token;
-      if (isWebContainer) {
-        console.log('WebContainer environment - using development bypass token');
-        token = 'dev-bypass-token';
-      } else {
-        try {
-          token = await getToken();
-          if (!token) {
-            throw new Error('Failed to get authentication token');
-          }
-        } catch (tokenError) {
-          console.error('Token error:', tokenError);
-          throw new Error('Authentication failed - could not get token');
+      try {
+        token = await getToken();
+        if (!token) {
+          throw new Error('Failed to get authentication token');
         }
+      } catch (tokenError) {
+        console.error('Token error:', tokenError);
+        throw new Error('Authentication failed - could not get token');
       }
       
       // Use secure API endpoint that requires authentication
