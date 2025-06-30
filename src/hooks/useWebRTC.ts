@@ -240,7 +240,9 @@ export const useWebRTC = ({ roomId, userName, userId }: UseWebRTCProps) => {
         const stream = await initializeMedia();
         
         // Initialize socket connection
-        socketRef.current = io('http://localhost:3001');
+        const socketUrl = import.meta.env.VITE_BACKEND_WS_URL || import.meta.env.VITE_BACKEND_URL || 'https://api.dope.vision';
+        console.log('Connecting to socket server:', socketUrl);
+        socketRef.current = io(socketUrl);
         
         socketRef.current.on('connect', () => {
           console.log('Connected to signaling server');

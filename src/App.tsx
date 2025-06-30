@@ -37,7 +37,7 @@ function App() {
         console.log('DEV MODE: Creating room with development bypass token');
         
         // Use the secure endpoint with development bypass token
-        const API_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+        const API_BASE = import.meta.env.VITE_BACKEND_URL || 'https://api.dope.vision';
         const response = await fetch(`${API_BASE}/api/secure/meetings`, {
           method: 'POST',
           headers: {
@@ -88,7 +88,7 @@ function App() {
       }
       
       // Use secure API endpoint that requires authentication
-      const API_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const API_BASE = import.meta.env.VITE_BACKEND_URL || 'https://api.dope.vision';
       const response = await fetch(`${API_BASE}/api/secure/meetings`, {
         method: 'POST',
         headers: {
@@ -130,7 +130,7 @@ function App() {
     try {
       // Join meetings should always be public - no authentication required
       // This allows invited participants to join without signing up
-      const API_BASE = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const API_BASE = import.meta.env.VITE_BACKEND_URL || 'https://api.dope.vision';
       const response = await fetch(`${API_BASE}/api/rooms/${roomId}`);
       
       if (!response.ok) {

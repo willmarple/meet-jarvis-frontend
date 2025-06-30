@@ -2,7 +2,7 @@ import axios, { AxiosError } from 'axios'
 
 // Create axios instance with base configuration
 export const apiClient = axios.create({
-  baseURL: `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api`,
+  baseURL: `${import.meta.env.VITE_BACKEND_URL || 'https://api.dope.vision'}/api`,
   timeout: 30000, // 30 second timeout for AI operations
   headers: {
     'Content-Type': 'application/json',
@@ -12,7 +12,7 @@ export const apiClient = axios.create({
 // Function to create an authenticated API client with Clerk token
 export const createAuthenticatedApiClient = async (getToken?: () => Promise<string | null>) => {
   const client = axios.create({
-    baseURL: `${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001'}/api`,
+    baseURL: `${import.meta.env.VITE_BACKEND_URL || 'https://api.dope.vision'}/api`,
     timeout: 30000,
     headers: {
       'Content-Type': 'application/json',

@@ -82,7 +82,7 @@ jspm_packages/
 
 # Gatsby files
 .cache/
-public/
+# public/ - commented out for Vite project, we want to track static assets
 
 # Storybook build outputs
 .out/
