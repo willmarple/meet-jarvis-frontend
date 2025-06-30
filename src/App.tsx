@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { AuthWrapper } from './components/AuthWrapper';
 import { HomePage } from './components/HomePage';
 import { MeetingRoom } from './components/MeetingRoom';
+import { InviteSignup } from './components/InviteSignup';
 import { AppState, MeetingData, User } from './types/index';
 
 function App() {
@@ -12,13 +13,20 @@ function App() {
   const [appState, setAppState] = useState<AppState>('home');
   const [meetingData, setMeetingData] = useState<MeetingData | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check for room ID in URL parameters
+    // Check for URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const roomFromUrl = urlParams.get('room');
+    const inviteTokenFromUrl = urlParams.get('invite_token');
     
-    if (roomFromUrl) {
+    if (inviteTokenFromUrl) {
+      // If there's an invite token, show invite signup flow
+      console.log('Invite token found in URL:', inviteTokenFromUrl.substring(0, 8) + '...');
+      setInviteToken(inviteTokenFromUrl);
+      setAppState('invite');
+    } else if (roomFromUrl) {
       // If there's a room in URL, show join form with pre-filled room ID
       console.log('Room found in URL:', roomFromUrl);
     }
@@ -163,6 +171,20 @@ function App() {
     window.history.pushState({}, '', '/');
   };
 
+  const handleInviteSignupSuccess = () => {
+    // After successful invite signup, go to home page
+    setAppState('home');
+    setInviteToken(null);
+    window.history.pushState({}, '', '/');
+  };
+
+  const handleInviteBack = () => {
+    // Go back to home from invite signup
+    setAppState('home');
+    setInviteToken(null);
+    window.history.pushState({}, '', '/');
+  };
+
   return (
     <AuthWrapper allowAnonymous={true}>
       <div className="App">
@@ -173,6 +195,12 @@ function App() {
             user={user as User | null}
             isSignedIn={isSignedIn || false}
             authError={authError}
+          />
+        ) : appState === 'invite' && inviteToken ? (
+          <InviteSignup
+            inviteToken={inviteToken}
+            onSuccess={handleInviteSignupSuccess}
+            onBack={handleInviteBack}
           />
         ) : (
           meetingData && (

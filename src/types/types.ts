@@ -187,7 +187,7 @@ export interface ElevenLabsTestResult {
 // FRONTEND TYPES
 // ===========================
 
-export type AppState = 'home' | 'meeting';
+export type AppState = 'home' | 'meeting' | 'invite';
 
 export interface MeetingData {
   roomId: string;
