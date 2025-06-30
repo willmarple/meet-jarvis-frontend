@@ -3,17 +3,13 @@ import {
   executeAITool,
   searchMeetingKnowledge,
   recallDecisions,
-  getActionItems,
   summarizeTopic,
-  findSimilarDiscussions,
   testElevenLabsIntegration,
 } from '../api/aiTools'
 import type {
   SearchParams,
   RecallDecisionsParams,
-  GetActionItemsParams,
   SummarizeTopicParams,
-  FindSimilarDiscussionsParams,
 } from '../types/types'
 
 // Query Keys
@@ -62,15 +58,6 @@ export const useRecallDecisions = () => {
   })
 }
 
-/**
- * Hook for getting action items
- */
-export const useGetActionItems = () => {
-  return useMutation({
-    mutationFn: ({ params, meetingId, getToken }: { params: GetActionItemsParams; meetingId?: string; getToken?: () => Promise<string | null> }) =>
-      getActionItems(params, meetingId, getToken),
-  })
-}
 
 /**
  * Hook for summarizing topics
@@ -82,15 +69,6 @@ export const useSummarizeTopic = () => {
   })
 }
 
-/**
- * Hook for finding similar discussions
- */
-export const useFindSimilarDiscussions = () => {
-  return useMutation({
-    mutationFn: ({ params, meetingId, getToken }: { params: FindSimilarDiscussionsParams; meetingId?: string; getToken?: () => Promise<string | null> }) =>
-      findSimilarDiscussions(params, meetingId, getToken),
-  })
-}
 
 /**
  * Hook for testing ElevenLabs integration

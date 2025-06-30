@@ -3,11 +3,9 @@ import { useConversation } from '@elevenlabs/react';
 import { 
   useSearchMeetingKnowledge, 
   useRecallDecisions, 
-  useGetActionItems, 
-  useSummarizeTopic, 
-  useFindSimilarDiscussions 
+  useSummarizeTopic 
 } from './useAITools';
-import type { GetActionItemsParams, FindSimilarDiscussionsParams, ToolCall as ImportedToolCall, ToolResult, JsonValue } from '../types/types';
+import type { ToolCall as ImportedToolCall, ToolResult, JsonValue } from '../types/types';
 
 interface KnowledgeItem {
   id: string;
@@ -57,9 +55,7 @@ export const useElevenLabsVoiceRAG = ({
   // Get React Query mutations for AI tools
   const searchKnowledgeMutation = useSearchMeetingKnowledge();
   const recallDecisionsMutation = useRecallDecisions();
-  const getActionItemsMutation = useGetActionItems();
   const summarizeTopicMutation = useSummarizeTopic();
-  const findSimilarDiscussionsMutation = useFindSimilarDiscussions();
 
   // Memoize the meeting context to prevent unnecessary re-renders
   const stableMeetingContext = useMemo(() => {
@@ -234,36 +230,6 @@ export const useElevenLabsVoiceRAG = ({
         }
       },
       
-      get_action_items: async (parameters: GetActionItemsParams) => {
-        try {
-          console.log('🔧 Executing get_action_items:', parameters);
-          const result = await getActionItemsMutation.mutateAsync({
-            params: parameters,
-            meetingId: meetingContext.meetingId,
-            getToken
-          });
-          
-          console.log('🔧 get_action_items result:', result);
-          
-          // Return a simple string response that ElevenLabs can easily understand
-          if (result.action_items && result.action_items.length > 0) {
-            const itemsList = result.action_items.map((item: { content: string }) => item.content).join('; ');
-            const response = `ACTION ITEMS (${parameters.status || 'all'}): ${itemsList}`;
-            console.log('🔧 get_action_items returning:', response);
-            return response;
-          } else {
-            const response = `No action items found for status: ${parameters.status || 'all'}`;
-            console.log('🔧 get_action_items returning:', response);
-            return response;
-          }
-        } catch (error) {
-          console.error('🔧 Tool execution failed - get_action_items:', error);
-          const response = `Error retrieving action items for status ${parameters.status || 'all'}: ${error instanceof Error ? error.message : 'Unknown error'}`;
-          console.log('🔧 get_action_items returning error:', response);
-          return response;
-        }
-      },
-      
       summarize_topic: async (parameters: { topic: string }) => {
         try {
           console.log('🔧 Executing summarize_topic:', parameters);
@@ -291,36 +257,6 @@ export const useElevenLabsVoiceRAG = ({
           console.log('🔧 summarize_topic returning error:', response);
           return response;
         }
-      },
-      
-      find_similar_discussions: async (parameters: FindSimilarDiscussionsParams) => {
-        try {
-          console.log('🔧 Executing find_similar_discussions:', parameters);
-          const result = await findSimilarDiscussionsMutation.mutateAsync({
-            params: parameters,
-            meetingId: meetingContext.meetingId,
-            getToken
-          });
-          
-          console.log('🔧 find_similar_discussions result:', result);
-          
-          // Return a simple string response that ElevenLabs can easily understand
-          if (result.similar_discussions && result.similar_discussions.length > 0) {
-            const topDiscussion = result.similar_discussions[0];
-            const response = `SIMILAR DISCUSSIONS: Found ${result.similar_discussions.length} discussions. Top match: ${topDiscussion.content} (${Math.round(topDiscussion.similarity * 100)}% match)`;
-            console.log('🔧 find_similar_discussions returning:', response);
-            return response;
-          } else {
-            const response = `No similar discussions found for: ${parameters.reference_text}`;
-            console.log('🔧 find_similar_discussions returning:', response);
-            return response;
-          }
-        } catch (error) {
-          console.error('🔧 Tool execution failed - find_similar_discussions:', error);
-          const response = `Error finding similar discussions for "${parameters.reference_text}": ${error instanceof Error ? error.message : 'Unknown error'}`;
-          console.log('🔧 find_similar_discussions returning error:', response);
-          return response;
-        }
       }
     };
     
@@ -331,9 +267,7 @@ export const useElevenLabsVoiceRAG = ({
     meetingContext,
     searchKnowledgeMutation,
     recallDecisionsMutation,
-    getActionItemsMutation,
     summarizeTopicMutation,
-    findSimilarDiscussionsMutation,
     getToken
   ]);
 

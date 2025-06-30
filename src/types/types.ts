@@ -89,20 +89,12 @@ export interface RecallDecisionsParams {
   topic: string
 }
 
-export interface GetActionItemsParams {
-  assignee?: string
-  status?: 'pending' | 'completed' | 'all'
-}
 
 export interface SummarizeTopicParams {
   topic: string
   include_context?: boolean
 }
 
-export interface FindSimilarDiscussionsParams {
-  reference_text: string
-  scope?: 'current_meeting' | 'all_meetings'
-}
 
 // ===========================
 // API RESPONSE DATA TYPES
@@ -123,15 +115,6 @@ export interface RecallDecisionsResult {
   }>
 }
 
-export interface ActionItemsResult {
-  assignee?: string
-  status: string
-  action_items: Array<{
-    content: string
-    created_at: string
-    similarity: number
-  }>
-}
 
 export interface TopicSummaryResult {
   topic: string
@@ -151,17 +134,6 @@ export interface TopicSummaryResult {
   }>
 }
 
-export interface SimilarDiscussionsResult {
-  reference_text: string
-  scope: string
-  similar_discussions: Array<{
-    content: string
-    type: string
-    meeting_id: string
-    similarity: number
-    created_at: string
-  }>
-}
 
 // ===========================
 // HEALTH CHECK & TESTING TYPES

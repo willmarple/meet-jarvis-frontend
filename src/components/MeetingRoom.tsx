@@ -138,12 +138,6 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
       
       console.log('🔧 Search test result:', searchResult);
       
-      // Test action items
-      const actionResult = await executeManualTool('get_action_items', {
-        status: 'all'
-      });
-      
-      console.log('🔧 Action items test result:', actionResult);
       
       // DO NOT add test results to knowledge base - these are system tests, not meeting content
       
@@ -497,22 +491,6 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
                 required: ['topic']
               }
             },
-            get_action_items: {
-              name,
-              description: 'Retrieve action items and tasks from meeting discussions',
-              parameters: {
-                type: 'object',
-                properties: {
-                  status: { 
-                    type: 'string', 
-                    description: 'Filter by status',
-                    enum: ['all', 'pending', 'completed', 'in_progress']
-                  },
-                  assignee: { type: 'string', description: 'Filter by person assigned (optional)' }
-                },
-                required: ['status']
-              }
-            },
             summarize_topic: {
               name,
               description: 'Generate a summary of discussions on a specific topic',
@@ -527,21 +505,6 @@ export const MeetingRoom: React.FC<MeetingRoomProps> = ({
                 required: ['topic']
               }
             },
-            find_similar_discussions: {
-              name,
-              description: 'Find similar discussions or topics from meeting history',
-              parameters: {
-                type: 'object',
-                properties: {
-                  topic: { 
-                    type: 'string', 
-                    description: 'Topic to find similar discussions for'
-                  },
-                  limit: { type: 'number', description: 'Maximum number of results (default: 5)' }
-                },
-                required: ['topic']
-              }
-            }
           };
           
           return toolConfigs[name as keyof typeof toolConfigs] || {

@@ -4,14 +4,10 @@ import type {
   ToolResult,
   SearchParams,
   RecallDecisionsParams,
-  GetActionItemsParams,
   SummarizeTopicParams,
-  FindSimilarDiscussionsParams,
   SearchKnowledgeResult,
   RecallDecisionsResult,
-  ActionItemsResult,
   TopicSummaryResult,
-  SimilarDiscussionsResult,
   ElevenLabsTestResult,
 } from '../types/types'
 
@@ -94,22 +90,6 @@ export const recallDecisions = async (
   return result.data as unknown as RecallDecisionsResult
 }
 
-/**
- * Get action items from meeting discussions
- */
-export const getActionItems = async (
-  params: GetActionItemsParams,
-  meetingId?: string,
-  getToken?: () => Promise<string | null>
-): Promise<ActionItemsResult> => {
-  const result = await executeAITool('get_action_items', params as unknown as Record<string, unknown>, meetingId, getToken)
-  
-  if (!result.success) {
-    throw new Error(result.error || 'Get action items failed')
-  }
-  
-  return result.data as unknown as ActionItemsResult
-}
 
 /**
  * Generate a summary of discussions on a specific topic
@@ -128,22 +108,6 @@ export const summarizeTopic = async (
   return result.data as unknown as TopicSummaryResult
 }
 
-/**
- * Find similar discussions from meeting history
- */
-export const findSimilarDiscussions = async (
-  params: FindSimilarDiscussionsParams,
-  meetingId?: string,
-  getToken?: () => Promise<string | null>
-): Promise<SimilarDiscussionsResult> => {
-  const result = await executeAITool('find_similar_discussions', params as unknown as Record<string, unknown>, meetingId, getToken)
-  
-  if (!result.success) {
-    throw new Error(result.error || 'Find similar discussions failed')
-  }
-  
-  return result.data as unknown as SimilarDiscussionsResult
-}
 
 /**
  * Test all ElevenLabs tools integration
